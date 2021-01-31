@@ -1,0 +1,45 @@
+{
+
+  "manifest_version": 2,
+  "name": "siteGrabber",
+  "version": "0.1.0",
+
+  "description": "Download whole content of a website.",
+
+  "icons": {
+    "16": "style/grabber-16.png",
+    "32": "style/grabber-32.png",
+    "48": "style/grabber-48.png",
+    "64": "style/grabber-64.png",
+    "128": "style/grabber-128.png",
+    "256": "style/grabber-256.png"
+  },
+
+  "permissions": [
+    "<all_urls>",
+    "tabs",
+    "storage",
+    "unlimitedStorage"
+  ],
+
+  "background": {
+    "scripts": [
+        "js/windowManager.js",
+         "js/crawler.js"
+     ]
+  },
+
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": {
+      "16": "style/grabber-16.png",
+      "32": "style/grabber-32.png",
+      "48": "style/grabber-48.png",
+      "64": "style/grabber-64.png",
+      "128": "style/grabber-128.png",
+      "256": "style/grabber-256.png"
+    },
+    "default_title": "SiteGrabber"
+  }
+
+}

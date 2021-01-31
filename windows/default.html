@@ -1,0 +1,90 @@
+<html>
+<title>siteGrabber</title>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="/style/w3.css">
+<script type="text/javascript" src="/style/jquery-3.5.1.js"></script>
+<script defer type="text/javascript" src="/js/default.js"></script>
+
+
+
+
+</script>
+
+<body class="w3-white">
+    <a id="addProject" class="w3-button w3-xlarge w3-circle w3-ripple w3-red w3-card w3-display-bottomright w3-margin">+</a>
+
+    <div class="project-list w3-sidebar w3-bar-block w3-border" style="width:25%;">
+        <ul id="projects" class="w3-ul w3-border-bottom">
+          <!--<li class="w3-padding-16 w3-hover-light-grey">
+              <img src="/style/web-32.png" class="w3-padding-small">
+              www.google.com
+          </li>//-->
+        </ul>
+   </div>
+
+   <div id="content" style="margin-left:25%">
+
+
+       <div class="w3-bar w3-small">
+           <!--<span class="w3-bar-item w3-white"></span> //-->
+           <button class="w3-bar-item w3-button w3-white w3-border w3-margin-right">Pause project</button>
+           <button class="w3-bar-item w3-button w3-white w3-border w3-margin-right">Export website</button>
+       </div>
+
+     <table class="w3-table w3-small">
+         <tr>
+             <td style="width:15%">Bytes Saved:</td><td id="dl-bytes" style="width:35%">8000 KBytes</td>
+             <td style="width:15%">Scanned links:</td><td id="links-count" style="width:35%">146/463</td>
+         </tr>
+         <tr>
+             <td>Active Time:</td><td id="active-time">02:13:25</td>
+             <td>Transfer rate:</td><td id="dl-rate">25KiB/s</td>
+         </tr>
+     </table>
+<br />
+  <table class="w3-table w3-striped w3-border w3-tiny">
+    <tr>
+      <th>status</th>
+      <th>Path</th>
+      <th>Percent</th>
+      <th>Action</th>
+    </tr>
+    <tr>
+      <td>Downloading</td>
+      <td>www.google.com/status</td>
+      <td><div class="w3-light-grey">
+  <div class="w3-container w3-red w3-center" style="width:50%">50%</div>
+</div></td>
+<td>
+40
+</td>
+    </tr>
+    <tr>
+      <td>Downloading</td>
+      <td>Jackson</td>
+      <td><div class="w3-light-grey">
+  <div class="w3-container w3-red w3-center" style="width:30%">30%</div>
+</div></td>
+<td>
+</td>
+    </tr>
+    <tr>
+      <td>Completed</td>
+      <td>Johnson</td>
+      <td><div class="w3-light-grey">
+  <div class="w3-container w3-red w3-center" style="width:100%">100%</div>
+</div>
+</td>
+<td>
+skip &nbsp Pause
+</td>
+    </tr>
+  </table>
+
+
+   </div>
+
+</body>
+</html>
