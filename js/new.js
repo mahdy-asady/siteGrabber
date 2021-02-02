@@ -11,10 +11,31 @@ $(function() {
     }, console.error);
 
 
+    $("#btnAddDomain").click(function(){
+        $("#wAddDomain").css("display", "block");
+    });
+
+    $("#btnAddDomainCancel").click(function(){
+        $("#txtDomain").val("http://");
+        $("#wAddDomain").css("display", "none");
+    });
+
+    $("#btnAddDomainSave").click(function(){
+        let url = new URL($("#txtDomain").val());
+        $('#lstDomains').append(new Option(url.hostname, url.hostname));
+        $("#txtDomain").val("http://");
+        $("#wAddDomain").css("display", "none");
+    });
+
+
+
+    $("#btnCancel").click(function(){
+        window.close();
+    });
+
     $("#btnManagerWindow").click(function(){
         openManager().catch(() => {window.close();});
         console.log("After openManager");
-        //window.close();
     });
 
 

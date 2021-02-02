@@ -18,7 +18,7 @@
           div {padding: 3 0;}
           fieldset{margin:0!important}
 
-          fieldset div{
+          fieldset div, .w3-container div{
               width:400px;
               display:table;
           }
@@ -63,6 +63,20 @@
             </div>
         </fieldset>
         </div>
+
+
+        <div id="wAddDomain" class="w3-modal">
+          <div class="w3-modal-content">
+            <div class="w3-container">
+              <p>Add domain to white list:</p>
+              <div><label for="txtDomain" class="field">Domain name:</label> <input type="text" id="txtDomain" value="http://" /></div>
+              <div>
+                  <span style="float:right"><button id="btnAddDomainCancel">Cancel</button>&nbsp<button id="btnAddDomainSave">&nbsp Add &nbsp</button></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
     </body>
 </html>
