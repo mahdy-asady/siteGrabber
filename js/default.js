@@ -1,3 +1,5 @@
+"use strict";
+
 var db_projects; //Projects DB connection
 var activeProject; //current active dispay project
 
@@ -61,6 +63,7 @@ function updateWindow() {
 };
 
 window.setInterval(updateWindow, 300);
+window.setInterval(listProjects, 3000);
 
 
 
@@ -77,7 +80,11 @@ $(".project-list ul").on("click", "li", function(){
 
 
 $("#addProject").click(function () {
-    var data = { site: "www.ii.com", active: true, config: ""};
+    browser.browserAction.openPopup();
+    //window.open("new.html");
+    //$('#new-project').css("display", "block");
+
+    var data = { site: "www.jj.com", active: true, config: ""};
 
     var transaction = db_projects.transaction("Projects", "readwrite");
 
@@ -85,7 +92,6 @@ $("#addProject").click(function () {
     var request = objectStore.add(data);
     request.onsuccess = function(event) {
         console.log("Project added successfully!");
-        listProjects();
     };
 
 
@@ -98,4 +104,7 @@ $("#addProject").click(function () {
     data2.forEach(function(dt) {
         objectStore.add(dt);
     });*/
+});
+$("#new-project-close").click(function() {
+     $('#new-project').css("display", "none");
 });

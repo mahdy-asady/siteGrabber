@@ -1,0 +1,68 @@
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Add New Site</title>
+        <link rel="stylesheet" href="/style/w3.css">
+        <style>
+          html {
+            box-sizing: content-box !important;
+          }
+
+          html, body {
+            height: auto !important;
+            -webkit-user-select: none;
+            user-select: none;
+            margin: 0;
+            padding: 4 0;
+          }
+          div {padding: 3 0;}
+          fieldset{margin:0!important}
+
+          fieldset div{
+              width:400px;
+              display:table;
+          }
+          label.field{
+              display:table-cell;
+              width:120px;
+          }
+          label.field2{
+              display:table-cell;
+              width:230px;
+          }
+          input[type='text']{display:table-cell; width:280px}
+          input[type='number']{display:table-cell; width:55px}
+          select{width: 350px; float: left;}
+      </style>
+      <script type="text/javascript" src="/style/jquery-3.5.1.js"></script>
+      <script type="text/javascript" src="/js/windowManager.js"></script>
+      <script type="text/javascript" src="/js/new.js"></script>
+    </head>
+    <body class="w3-white w3-small">
+        <div class="w3-container">
+            <fieldset><legend>Create New Project</legend>
+            <div><label for="txtName" class="field">Project name:</label> <input type="text" id="txtName" /></div>
+            <div><label for="txtStartUrl" class="field">Initial page:</label> <input type="text" id="txtStartUrl" /></div>
+            <div><label for="lstDomains">Allowed domains:</label></div>
+            <div>
+                <select id="lstDomains" size="5"></select>
+                <span style="float:left">
+                    <button id="btnAddDomain" class="w3-tiny" style="width:5px; padding:0; margin:0">+</button><br />
+                    <button id="btnDelDomain" class="w3-tiny" style="width:5px; padding:0; margin:0">-</button>
+                </span>
+            </div>
+            <div>
+                <label for="txtConcurrentLimit" class="field2">Concurrent download limit:</label> <input type="number" id="txtConcurrentLimit" min="1" max="10" value="4">
+            </div>
+            <div>
+                <label for="txtMaxFileSize" class="field2">Maximum allowed download file size:</label> <input type="number" id="txtMaxFileSize" min="1" value="500"> KBytes
+            </div>
+            <div>
+                <span style="float:left"><button id="btnManagerWindow">Open Main window</button></span>
+                <span style="float:right"><button id="btnCancel">Cancel</button>&nbsp<button id="btnSave">&nbsp Add &nbsp</button></span>
+            </div>
+        </fieldset>
+        </div>
+
+    </body>
+</html>

@@ -18,6 +18,7 @@
   "permissions": [
     "<all_urls>",
     "tabs",
+    "activeTab",
     "storage",
     "unlimitedStorage"
   ],
@@ -31,6 +32,9 @@
 
   "browser_action": {
     "browser_style": true,
+//
+    "default_popup": "windows/new.html",
+//
     "default_icon": {
       "16": "style/grabber-16.png",
       "32": "style/grabber-32.png",
