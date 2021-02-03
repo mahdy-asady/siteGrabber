@@ -10,6 +10,9 @@ $(function() {
 
     }, console.error);
 
+    $("#btnDelDomain").click(function(){
+        $('#lstDomains').find(":selected").remove();
+    });
 
     $("#btnAddDomain").click(function(){
         $("#wAddDomain").css("display", "block");
@@ -35,7 +38,6 @@ $(function() {
 
     $("#btnManagerWindow").click(function(){
         openManager().catch(() => {window.close();});
-        console.log("After openManager");
     });
 
 
