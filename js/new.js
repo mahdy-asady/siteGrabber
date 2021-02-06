@@ -3,8 +3,13 @@ $(function() {
 
     browser.tabs.query({currentWindow: true, active: true}).then((tabs) => {
         let strUrl = tabs[0].url; // Safe to assume there will only be one result
-        $("#txtStartUrl").val(strUrl);
         let url = new URL(strUrl);
+        if($.inArray(url.protocol, ["about:", "moz-extension:"])>=0) {
+            $("#txtStartUrl").val("http://");
+            return;
+        }
+
+        $("#txtStartUrl").val(strUrl);
         $("#txtName").val(url.hostname);
         $('#lstDomains').append(new Option(url.hostname, url.hostname));
 
