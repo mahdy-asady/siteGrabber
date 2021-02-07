@@ -15,8 +15,33 @@ request.onerror = function(event) {
 request.onupgradeneeded = function(event) {
   let db = event.target.result;
   console.log("onupgradeneeded!");
-  let objectStore = db.createObjectStore("Projects", { keyPath: "name" });
-  objectStore.createIndex("active", "active", { unique: false });
+  /*
+    Project store:
+        * id        **key
+        * active
+        * name
+        * config
+            * whiteList
+            * downloadLimit
+            * maxSize
+            * lifeTime
+  */
+  let projectStore = db.createObjectStore("Projects", { keyPath: "id", autoIncrement: true });
+  //projectStore.createIndex("name", "name", { unique: false });
+  //projectStore.createIndex("active", "active", { unique: false });
+
+  /*
+    Pages store:
+        * id        **key
+        * pid
+        * time
+        * path
+        * content
+
+  */
+  let pagesStore = db.createObjectStore("Pages", { keyPath: "id", autoIncrement: true });
+  projectStore.createIndex("pageDated", ["pid", "time"], { unique: false });
+  //projectStore.createIndex("active", "active", { unique: false });
 
 };
 

@@ -19,15 +19,39 @@ $(function() {
     request.onupgradeneeded = function(event) {
       let db = event.target.result;
       console.log("onupgradeneeded!");
-      let objectStore = db.createObjectStore("Projects", { keyPath: "name" });
-      objectStore.createIndex("active", "active", { unique: false });
+      /*
+        Project store:
+            * id        **key
+            * active
+            * name
+            * config
+                * whiteList
+                * downloadLimit
+                * maxSize
+                * lifeTime
+      */
+      let projectStore = db.createObjectStore("Projects", { keyPath: "id", autoIncrement: true });
+      //projectStore.createIndex("name", "name", { unique: false });
+      //projectStore.createIndex("active", "active", { unique: false });
+
+      /*
+        Pages store:
+            * id        **key
+            * pid
+            * time
+            * path
+            * content
+
+      */
+      let pagesStore = db.createObjectStore("Pages", { keyPath: "id", autoIncrement: true });
+      projectStore.createIndex("pageDated", ["pid", "time"], { unique: false });
+      //projectStore.createIndex("active", "active", { unique: false });
 
     };
 
     request.onsuccess = function(event) {
       console.log("db.success!");
       db_projects = event.target.result;
-      initProjects();
     };
 
 
@@ -93,7 +117,7 @@ $(function() {
 
         var data = {
             name: $("#txtName").val(),
-            active: true,
+            active: $("#chkActive").is(":checked"),
             config: {
                 whiteList:[],
                 downloadLimit: $("#txtConcurrentLimit").val(),
@@ -105,7 +129,6 @@ $(function() {
             data.config.whiteList.push(this.value);
         });
 
-        console.log(data);
 
         var transaction = db_projects.transaction("Projects", "readwrite");
 
