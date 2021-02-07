@@ -40,7 +40,7 @@ $(function() {
         let strUrl = tabs[0].url;
         let url = new URL(strUrl);
         if($.inArray(url.protocol, ["about:", "moz-extension:"])>=0) {
-            $("#txtStartUrl").val("http://");
+            $("#txtStartUrl").val("https://");
             return;
         }
 
@@ -59,14 +59,14 @@ $(function() {
     });
 
     $("#btnAddDomainCancel").click(function(){
-        $("#txtDomain").val("http://");
+        $("#txtDomain").val("https://");
         $("#wAddDomain").css("display", "none");
     });
 
     $("#btnAddDomainSave").click(function(){
         let url = new URL($("#txtDomain").val());
         $('#lstDomains').append(new Option(url.hostname, url.hostname));
-        $("#txtDomain").val("http://");
+        $("#txtDomain").val("https://");
         $("#wAddDomain").css("display", "none");
     });
 
