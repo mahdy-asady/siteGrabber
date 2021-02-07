@@ -17,7 +17,7 @@ request.onupgradeneeded = function(event) {
   console.log("onupgradeneeded!");
   /*
     Project store:
-        * id        **key
+        * pid        **key
         * active
         * name
         * config
@@ -26,7 +26,7 @@ request.onupgradeneeded = function(event) {
             * maxSize
             * lifeTime
   */
-  let projectStore = db.createObjectStore("Projects", { keyPath: "id", autoIncrement: true });
+  let projectStore = db.createObjectStore("Projects", { keyPath: "pid", autoIncrement: true });
   //projectStore.createIndex("name", "name", { unique: false });
   //projectStore.createIndex("active", "active", { unique: false });
 
