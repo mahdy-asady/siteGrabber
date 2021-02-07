@@ -135,7 +135,19 @@ $(function() {
         var objectStore = transaction.objectStore("Projects");
         var request = objectStore.add(data);
         request.onsuccess = function(event) {
-            window.close();
+            //event.target.result
+            let data ={
+                pid: event.target.result,
+                time: 0,
+                path: $("#txtStartUrl").val()
+            };
+
+            var pgTransaction = db_projects.transaction("Pages", "readwrite");
+
+            var Pages = pgTransaction.objectStore("Pages");
+            var PagesRequest = Pages.add(data);
+            PagesRequest.onsuccess = function(event) {window.close();};
+
         };
     });
 
