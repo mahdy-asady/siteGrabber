@@ -24,9 +24,8 @@ function listProjects() {
 
     objectStore.getAll().onsuccess = function(event) {
         $("#projects").empty();
-        event.target.result.forEach(Project => $("#projects").append("<li data-site=\"" + Project.site + "\" data-active=" + Project.active + " class=\"w3-padding-16 w3-hover-light-grey\"><img src=\"/style/web-32.png\" class=\"w3-padding-small\">" + Project.site + "</li>"));
+        event.target.result.forEach(Project => $("#projects").append("<li data-name=\"" + Project.name + "\" data-active=" + Project.active + " class=\"w3-padding-16 w3-hover-light-grey\"><img src=\"/style/web-32.png\" class=\"w3-padding-small\">" + Project.name + "</li>"));
         if(!listProjects.hasExecuted) {
-            console.log("first time run");
             $(".project-list ul li:first-child").click();
             listProjects.hasExecuted = 1;
         }
@@ -46,7 +45,7 @@ function highlightActiveProject() {
     $(".project-list ul li").addClass("w3-hover-light-grey");
 
     $(".project-list ul li").each(function(){
-        if($(this).data().site == activeProject) {
+        if($(this).data().name == activeProject) {
             $(this).addClass("w3-green w3-hover-light-green");
             $(this).removeClass("w3-hover-light-grey");
         }
@@ -71,7 +70,7 @@ window.setInterval(listProjects, 3000);
 
 
 $(".project-list ul").on("click", "li", function(){
-    activeProject = $(this).data().site;
+    activeProject = $(this).data().name;
     highlightActiveProject();
     //call ...
 
@@ -84,7 +83,7 @@ $("#addProject").click(function () {
     //window.open("new.html");
     //$('#new-project').css("display", "block");
 
-    var data = { site: "www.jj.com", active: true, config: ""};
+    var data = { name: "www.jj.com", active: true, config: ""};
 
     var transaction = db_projects.transaction("Projects", "readwrite");
 
@@ -96,10 +95,10 @@ $("#addProject").click(function () {
 
 
     /*var data2 = [
-        { site: "www.yahoo.com", active: true, config: ""},
-        { site: "www.gmail.com", active: false, config: ""},
-        { site: "www.microsoft.com", active: true, config: ""},
-        { site: "www.apple.com", active: false, config: ""}
+        { name: "www.yahoo.com", active: true, config: ""},
+        { name: "www.gmail.com", active: false, config: ""},
+        { name: "www.microsoft.com", active: true, config: ""},
+        { name: "www.apple.com", active: false, config: ""}
     ];
     data2.forEach(function(dt) {
         objectStore.add(dt);

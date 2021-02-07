@@ -15,11 +15,9 @@ request.onerror = function(event) {
 request.onupgradeneeded = function(event) {
   let db = event.target.result;
   console.log("onupgradeneeded!");
-  let objectStore = db.createObjectStore("Projects", { keyPath: "site" });
+  let objectStore = db.createObjectStore("Projects", { keyPath: "name" });
   objectStore.createIndex("active", "active", { unique: false });
-  objectStore.createIndex("config", "config", { unique: false });
 
-  console.log("ObjectStore created successfully!");
 };
 
 request.onsuccess = function(event) {
