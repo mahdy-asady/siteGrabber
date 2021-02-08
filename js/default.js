@@ -1,11 +1,11 @@
 "use strict";
+initDB(listProjects);
 
-var db_projects; //Projects DB connection
 var activeProject; //current active dispay project
 
 
 
-
+/*
 (function (){
     var request = window.indexedDB.open("__DATA__", 1);
     request.onerror = function(event) {
@@ -18,6 +18,7 @@ var activeProject; //current active dispay project
       listProjects();
     };
 })();
+*/
 
 function listProjects() {
     var objectStore = db_projects.transaction("Projects").objectStore("Projects");
