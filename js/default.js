@@ -14,14 +14,14 @@ var activeProject; //current active dispay project
     };
 
     request.onsuccess = function(event) {
-      db_projects = event.target.result;
+      db = event.target.result;
       listProjects();
     };
 })();
 */
 
 function listProjects() {
-    var objectStore = db_projects.transaction("Projects").objectStore("Projects");
+    var objectStore = db.transaction("Projects").objectStore("Projects");
 
     objectStore.getAll().onsuccess = function(event) {
         $("#projects").empty();
@@ -86,7 +86,7 @@ $("#addProject").click(function () {
 
     var data = { name: "www.jj.com", active: true, config: ""};
 
-    var transaction = db_projects.transaction("Projects", "readwrite");
+    var transaction = db.transaction("Projects", "readwrite");
 
     var objectStore = transaction.objectStore("Projects");
     var request = objectStore.add(data);

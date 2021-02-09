@@ -73,7 +73,7 @@ $(function() {
         });
 
 
-        var transaction = db_projects.transaction("Projects", "readwrite");
+        var transaction = db.transaction("Projects", "readwrite");
 
         var objectStore = transaction.objectStore("Projects");
         var request = objectStore.add(data);
@@ -85,7 +85,7 @@ $(function() {
                 path: $("#txtStartUrl").val()
             };
 
-            var pgTransaction = db_projects.transaction("Pages", "readwrite");
+            var pgTransaction = db.transaction("Pages", "readwrite");
 
             var Pages = pgTransaction.objectStore("Pages");
             var PagesRequest = Pages.add(data);

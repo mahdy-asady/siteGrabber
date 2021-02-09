@@ -3,7 +3,7 @@ if (!window.indexedDB) {
 }
 
 //main database to store projects
-var db_projects;
+var db;
 function initDB(startFunc) {
     var request = window.indexedDB.open("__DATA__", 1);
     console.log("db.open()!");
@@ -48,7 +48,7 @@ function initDB(startFunc) {
 
     request.onsuccess = function(event) {
       console.log("db.success!");
-      db_projects = event.target.result;
+      db = event.target.result;
       startFunc();
     };
 }
