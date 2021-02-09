@@ -16,11 +16,11 @@ async function openManager() {
         await browser.windows.update(tab.windowId, { focused: true });
         return;
     }
-    console.log("openManager runed3!");
+
+    const window = await browser.windows.getCurrent();
     await browser.tabs.create({
         active: true,
         url
     });
-    console.log("openManager runed4!");
     await browser.windows.update(window.id, { focused: true });
 }

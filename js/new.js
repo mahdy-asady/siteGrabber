@@ -44,7 +44,7 @@ $(function() {
     });
 
     $("#btnManagerWindow").click(function(){
-        openManager().catch(() => {window.close();});
+        openManager().finally(() => {window.close();});
     });
 
 
