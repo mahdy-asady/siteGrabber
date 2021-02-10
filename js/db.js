@@ -41,8 +41,8 @@ function initDB(startFunc) {
 
       */
       let pagesStore = db.createObjectStore("Pages", { keyPath: "id", autoIncrement: true });
-      projectStore.createIndex("pageDated", ["pid", "time"], { unique: false });
-      //projectStore.createIndex("active", "active", { unique: false });
+      pagesStore.createIndex("pageDated", ["pid", "time"], { unique: false });
+      //pagesStore.createIndex("active", "active", { unique: false });
 
     };
 
