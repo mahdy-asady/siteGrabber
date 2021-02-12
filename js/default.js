@@ -92,7 +92,7 @@ $("#projectPause").click(function() {
 });
 
 $("#projectDelete").click(function() {
-    if(confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
+    if((activeProject != undefined) && confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
         browser.runtime.sendMessage({
             type:"Delete",
             pid: activeProject

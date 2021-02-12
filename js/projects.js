@@ -17,8 +17,6 @@ browser.runtime.onMessage.addListener(msg => {
     }
 });
 function deleteProject(msg) {
-    console.log("Deleting Project");
-
     db.transaction("Projects", "readwrite").objectStore("Projects").delete(msg.pid).onsuccess = function(event) {
         let index = db.transaction("Pages", "readwrite").objectStore("Pages").index("pid");
         let request = index.openKeyCursor(IDBKeyRange.only(msg.pid));
