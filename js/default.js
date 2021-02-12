@@ -1,10 +1,22 @@
 "use strict";
-initDB(listProjects);
+//initDB(listProjects);
 
 var activeProject; //current active dispay project
 
 browser.runtime.onMessage.addListener(updateWindow);
 function updateWindow(msg) {
+    switch (msg.type) {
+        case "Pages":
+            updatePages(msg);
+            break;
+        case "Projects":
+            updateProjects(msg);
+            break;
+    }
+
+}
+
+function updatePages(msg) {
     if(activeProject == msg.pid) {
         if(msg.isActive) {
             $("#projectPause").text("Pause Project");
@@ -28,24 +40,22 @@ function updateWindow(msg) {
 }
 
 
-function listProjects() {
-    var objectStore = db.transaction("Projects").objectStore("Projects");
+function updateProjects(msg) {
+    $("#projects").empty();
+    msg.projects.forEach((item, i) => {
+        $("#projects").append(`<li data-pid="${item.pid}" data-isActive="${item.isActive}" class="w3-padding-16 w3-hover-light-grey"><img src="/style/web-32.png" class="w3-padding-small">${item.name}</li>`);
+    });
 
-    objectStore.getAll().onsuccess = function(event) {
-        $("#projects").empty();
-        event.target.result.forEach(Project => $("#projects").append("<li data-pid=\"" + Project.pid + "\" data-active=" + Project.active + " class=\"w3-padding-16 w3-hover-light-grey\"><img src=\"/style/web-32.png\" class=\"w3-padding-small\">" + Project.name + "</li>"));
-        if(!listProjects.hasExecuted) {
-            $(".project-list ul li:first-child").click();
-            listProjects.hasExecuted = 1;
-        }
-        else {
-            highlightActiveProject();
-        }
-    };
+    if(msg.projects.length == 0)
+        updateProjects.hasExecuted = 0;
+    else if(!updateProjects.hasExecuted) {
+        $(".project-list ul li:first-child").click();
+        updateProjects.hasExecuted = 1;
+    }
+    else {
+        highlightActiveProject();
+    }
 }
-window.setInterval(listProjects, 2000);
-
-
 
 
 
@@ -74,7 +84,7 @@ $(".project-list ul").on("click", "li", function(){
 });
 
 $("#projectPause").click(function() {
-    
+
 });
 
 $("#addProject").click(function () {

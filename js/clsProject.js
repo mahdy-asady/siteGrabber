@@ -22,6 +22,7 @@ class Project {
         setInterval(()=>{
             if(this.isActive) {
                 sendMessage({
+                    type:"Pages",
                     pid:this.pid,
                     isActive: this.isActive,
                     jobs: this.jobs
