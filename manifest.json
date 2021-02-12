@@ -28,7 +28,7 @@
         "js/windowManager.js",
         "js/db.js",
         "js/clsProject.js",
-        "js/crawler.js"
+        "js/projects.js"
      ]
   },
 
