@@ -30,10 +30,10 @@
    <div id="content" style="margin-left:25%">
 
 
-       <div class="w3-bar w3-small">
-           <!--<span class="w3-bar-item w3-white"></span> //-->
-           <button class="w3-bar-item w3-button w3-white w3-border w3-margin-right">Pause project</button>
-           <button class="w3-bar-item w3-button w3-white w3-border w3-margin-right">Export website</button>
+       <div class="w3-bar w3-tiny w3-padding-large">
+           <button id="projectDelete" class="w3-bar-item w3-button w3-white w3-border w3-margin-right">Delete Project</button>
+           <button id="projectPause" class="w3-bar-item w3-button w3-white w3-border w3-margin-right">Pause Project</button>
+           <button id="projectExport" class="w3-bar-item w3-button w3-white w3-border w3-margin-right">Export Website</button>
        </div>
 
      <table class="w3-table w3-small">
@@ -47,7 +47,13 @@
          </tr>
      </table>
 <br />
-  <table class="w3-table w3-striped w3-border w3-tiny">
+  <table id="activePages" class="w3-table w3-striped w3-border w3-tiny">
+      <colgroup>
+          <col style="width:10%;">
+          <col style="width:70%;">
+          <col style="width:10%;">
+          <col style="width:10%;">
+      </colgroup>
     <tr>
       <th>status</th>
       <th>Path</th>
