@@ -18,12 +18,6 @@ function updateWindow(msg) {
 
 function updatePages(msg) {
     if(activeProject == msg.pid) {
-        if(msg.isActive) {
-            $("#projectPause").text("Pause Project");
-        } else {
-            $("#projectPause").text("Resume Project");
-        }
-
         $("#activePages").find("tr:gt(0)").remove();
 
         msg.jobs.forEach((item, i) => {
@@ -43,7 +37,7 @@ function updatePages(msg) {
 function updateProjects(msg) {
     $("#projects").empty();
     msg.projects.forEach((item, i) => {
-        $("#projects").append(`<li data-pid="${item.pid}" data-isActive="${item.isActive}" class="w3-padding-16 w3-hover-light-grey"><img src="/style/web-32.png" class="w3-padding-small">${item.name}</li>`);
+        $("#projects").append(`<li data-pid="${item.pid}" data-isActive="${item.isActive}" class="w3-padding-16 w3-hover-light-grey"><img src="/style/web-32.png" class="w3-padding-small">${item.name}${(!item.isActive)? "(Paused)":""}</li>`);
     });
 
     if(msg.projects.length == 0)
@@ -68,6 +62,13 @@ function highlightActiveProject() {
         if($(this).data().pid == activeProject) {
             $(this).addClass("w3-green w3-hover-light-green");
             $(this).removeClass("w3-hover-light-grey");
+
+            //change pause/resume button text
+            if($(this).data().isactive) {
+                $("#projectPause").text("Pause Project");
+            } else {
+                $("#projectPause").text("Resume Project");
+            }
         }
     });
 };
@@ -84,7 +85,19 @@ $(".project-list ul").on("click", "li", function(){
 });
 
 $("#projectPause").click(function() {
+    browser.runtime.sendMessage({
+        type:"toggleActivate",
+        pid: activeProject
+    });
+});
 
+$("#projectDelete").click(function() {
+    if(confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
+        browser.runtime.sendMessage({
+            type:"Delete",
+            pid: activeProject
+        });
+    }
 });
 
 $("#addProject").click(function () {

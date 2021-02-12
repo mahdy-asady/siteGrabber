@@ -1,8 +1,52 @@
 //after connecting to database. every 3 seconds we will refresh projects
 initDB(() => {setInterval(initProjects, 500);});
-
 //the key of Projects array is pid of the projects, then we could easyly access every project in this list by accessing Projects[pid]
 var Projects = {};
+
+
+browser.runtime.onMessage.addListener(msg => {
+    switch (msg.type) {
+        case "Delete":
+            deleteProject(msg);
+            break;
+        case "toggleActivate":
+                toggleActivate(msg);
+                break;
+        default:
+
+    }
+});
+function deleteProject(msg) {
+    console.log("Deleting Project");
+
+    db.transaction("Projects", "readwrite").objectStore("Projects").delete(msg.pid).onsuccess = function(event) {
+        let index = db.transaction("Pages", "readwrite").objectStore("Pages").index("pid");
+        let request = index.openKeyCursor(IDBKeyRange.only(msg.pid));
+
+        request.onsuccess = function(event) {
+            let cursor = event.target.result;
+
+            if (cursor) {
+                cursor.delete();
+                cursor.continue();
+            }
+        };
+    };
+}
+//we certainly need a cleanup function to run every startup to remove remaining rows in Pages store.
+//function cleanup(){}
+
+function toggleActivate(msg) {
+    let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
+    dbProjects.put({
+        pid:    msg.pid,
+        active:!Projects[msg.pid].isActive,
+        name:   Projects[msg.pid].name,
+        config: Projects[msg.pid].config,
+
+    });
+}
+
 
 function initProjects() {
     let dbProjects = db.transaction("Projects").objectStore("Projects");
@@ -25,7 +69,7 @@ function initProjects() {
 
             if(!(item.pid in Projects)) {
                 //create project
-                Projects[item.pid] = new Project(item.pid, item.active, item.config);
+                Projects[item.pid] = new Project(item.pid, item.name, item.active, item.config);
             }
             else {
                 //update project

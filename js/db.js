@@ -28,8 +28,6 @@ function initDB(startFunc) {
                 * lifeTime
       */
       let projectStore = db.createObjectStore("Projects", { keyPath: "pid", autoIncrement: true });
-      //projectStore.createIndex("name", "name", { unique: false });
-      //projectStore.createIndex("active", "active", { unique: false });
 
       /*
         Pages store:
@@ -41,9 +39,9 @@ function initDB(startFunc) {
 
       */
       let pagesStore = db.createObjectStore("Pages", { keyPath: "id", autoIncrement: true });
+      pagesStore.createIndex("pid", "pid", { unique: false });
       pagesStore.createIndex("pageDated", ["pid", "time"], { unique: false });
       pagesStore.createIndex("pathOfProject", ["pid", "path"], { unique: true });
-      //pagesStore.createIndex("active", "active", { unique: false });
 
     };
 

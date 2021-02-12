@@ -1,5 +1,6 @@
 class Project {
     pid;
+    name;
     isActive = false;
     config;
 
@@ -14,8 +15,9 @@ class Project {
         ]
     */
     jobs = [];
-    constructor(pid, isActive, config) {
+    constructor(pid, name, isActive, config) {
         this.pid = pid;
+        this.name = name;
         this.isActive = isActive
         this.config = config;
         this.seeder();
@@ -24,7 +26,6 @@ class Project {
                 sendMessage({
                     type:"Pages",
                     pid:this.pid,
-                    isActive: this.isActive,
                     jobs: this.jobs
                 });
             }
@@ -129,7 +130,7 @@ class Project {
     async seeder() {
         //for now if this.pid is set to 0 then project has been deleted and must be stopped
         while(this.pid) {
-            console.log("Project " + this.pid + " jobs:" + this.jobs.length);
+            //console.log("Project " + this.pid + " jobs:" + this.jobs.length);
 
             let doWait = false;
             if(!this.isActive || this.jobs.length >= this.config.downloadLimit) {
