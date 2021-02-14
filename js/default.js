@@ -3,7 +3,9 @@
 
 var activeProject; //current active dispay project
 
-browser.runtime.onMessage.addListener(updateWindow);
+var BGConnection = browser.runtime.connect({name:"siteGrabber"});
+BGConnection.onMessage.addListener(updateWindow);
+
 function updateWindow(msg) {
     switch (msg.type) {
         case "Pages":
@@ -85,7 +87,7 @@ $(".project-list ul").on("click", "li", function(){
 });
 
 $("#projectPause").click(function() {
-    browser.runtime.sendMessage({
+    BGConnection.postMessage({
         type:"toggleActivate",
         pid: activeProject
     });
@@ -93,7 +95,7 @@ $("#projectPause").click(function() {
 
 $("#projectDelete").click(function() {
     if((activeProject != undefined) && confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
-        browser.runtime.sendMessage({
+        BGConnection.postMessage({
             type:"Delete",
             pid: activeProject
         });

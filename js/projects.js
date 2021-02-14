@@ -4,18 +4,33 @@ initDB(() => {setInterval(initProjects, 500);});
 var Projects = {};
 
 
-browser.runtime.onMessage.addListener(msg => {
-    switch (msg.type) {
-        case "Delete":
-            deleteProject(msg);
-            break;
-        case "toggleActivate":
-                toggleActivate(msg);
-                break;
-        default:
+//*************************************************************************
 
-    }
-});
+browser.runtime.onConnect.addListener(initConnection);
+var CSConnection;
+
+function initConnection(c) {
+    CSConnection = c;
+    CSConnection.onMessage.addListener(msg => {
+        switch (msg.type) {
+            case "Delete":
+                deleteProject(msg);
+                break;
+            case "toggleActivate":
+                    toggleActivate(msg);
+                    break;
+            default:
+
+        }
+    });
+}
+
+async function sendMessage(msg) {
+    if(CSConnection)
+        CSConnection.postMessage(msg);
+}
+
+
 function deleteProject(msg) {
     db.transaction("Projects", "readwrite").objectStore("Projects").delete(msg.pid).onsuccess = function(event) {
         let index = db.transaction("Pages", "readwrite").objectStore("Pages").index("pid");

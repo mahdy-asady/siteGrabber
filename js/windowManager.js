@@ -25,15 +25,6 @@ async function openManager() {
     await browser.windows.update(window.id, { focused: true });
 }
 
-async function sendMessage(msg) {
-    let url = browser.runtime.getURL("/windows/default.html");
-    const etabs = await browser.tabs.query({url});
-    if (etabs.length) {
-        const tab = etabs.pop();
-        browser.tabs.sendMessage(tab.id, msg);
-    }
-}
-
 var animateStart;
 function doAnimate() {
     console.log("Animation set!");
