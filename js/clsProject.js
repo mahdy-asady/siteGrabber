@@ -46,6 +46,7 @@ class Project {
             item.status = 10;
             fetch(item.path)
                 .then(response => {
+                    //doAnimate();
                     item.status = 40;
                     if(response.ok) {
                         response.text().then(content => {
@@ -82,6 +83,7 @@ class Project {
                                             };
                                             //console.log(newUrl);
                                             db.transaction(["Pages"], "readwrite").objectStore("Pages").add(newUrl);
+                                            //doAnimate();
                                             item.status += counter;
                                         }
                                     } catch (e) {}
@@ -159,6 +161,7 @@ class Project {
                         cursor.continue();
                         return;
                     }
+                    doAnimate();
                     this.addJob(node.id, node.path);
 
                     //ok let do some speedy. if we have some space in jobs, use current db connection and fill them...

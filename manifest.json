@@ -7,12 +7,7 @@
   "description": "Download whole content of a website.",
 
   "icons": {
-    "16": "style/grabber-16.png",
-    "32": "style/grabber-32.png",
-    "48": "style/grabber-48.png",
-    "64": "style/grabber-64.png",
-    "128": "style/grabber-128.png",
-    "256": "style/grabber-256.png"
+    "48": "style/grabber.svg"
   },
 
   "permissions": [
@@ -37,14 +32,7 @@
 //
     "default_popup": "windows/new.html",
 //
-    "default_icon": {
-      "16": "style/grabber-16.png",
-      "32": "style/grabber-32.png",
-      "48": "style/grabber-48.png",
-      "64": "style/grabber-64.png",
-      "128": "style/grabber-128.png",
-      "256": "style/grabber-256.png"
-    },
+    "default_icon": "style/grabber.svg",
     "default_title": "SiteGrabber"
   }
 

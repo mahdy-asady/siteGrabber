@@ -33,3 +33,26 @@ async function sendMessage(msg) {
         browser.tabs.sendMessage(tab.id, msg);
     }
 }
+
+var animateStart;
+function doAnimate() {
+    console.log("Animation set!");
+    if(animateStart<(Date.now()-1000)) {
+        //start animation
+        browser.browserAction.setIcon({
+            path: {
+                16: "style/grabber-16.gif",
+                32: "style/grabber-32.gif"
+            }
+        });
+
+    }
+    animateStart = Date.now();
+}
+setInterval(()=>{
+    if(animateStart<(Date.now()-1000)) {
+        //stop animation
+        browser.browserAction.setIcon({path:"style/grabber.svg"});
+        console.log("Icon set!");
+    }
+}, 1000);
