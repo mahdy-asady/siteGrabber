@@ -22,14 +22,14 @@ class Project {
         this.config = config;
         this.seeder();
         setInterval(()=>{
-            if(this.isActive) {
+            //if(this.isActive) {
                 sendMessage({
                     type:"Pages",
                     pid:this.pid,
                     jobs: this.jobs
                 });
-            }
-        }, 100);
+            //}
+        }, 200);
     }
 
     setActive(isActive) {
@@ -67,9 +67,10 @@ class Project {
                                 const regexp = /(?:(?:<a|<link).* href=[\'"]?([^\'" >]+))|(?:(?:<img|<script).* src=[\'"]?([^\'" >]+))/gi;
                                 const matches = content.matchAll(regexp);
                                 //console.log(matches);
-                                let counter = 50/matches.length;
+                                var counter = 50/matches.length;
                                 for (const match of matches) {
                                     let txtUrl = match[1]? match[1]:match[2];
+                                    item.status += counter;
                                     try {
 
                                         let url = new URL(txtUrl, item.path);
@@ -83,8 +84,6 @@ class Project {
                                             };
                                             //console.log(newUrl);
                                             db.transaction(["Pages"], "readwrite").objectStore("Pages").add(newUrl);
-                                            //doAnimate();
-                                            item.status += counter;
                                         }
                                     } catch (e) {}
                                 }
@@ -115,19 +114,19 @@ class Project {
             status : 0
         }) - 1;
 
-        this.worker(this.jobs[threadIndex]).finally(()=>{
-            let i = 0;
-            for(i = 0; i<this.jobs.length; i++) {
-                if(this.jobs[i].pageID == pageID) {
-                    this.jobs.splice(i, 1);//delete finished job
-                    break;
-                }
-            }
-            //this.jobs.splice(threadIndex, 1);//delete finished job
-        });
+        this.worker(this.jobs[threadIndex]).finally(()=>{this.deleteJob(pageID)});
     }
 
-    deleteJob(){}
+    async deleteJob(pageID){
+        await new Promise(r => setTimeout(r, 500));
+        let i = 0;
+        for(i = 0; i<this.jobs.length; i++) {
+            if(this.jobs[i].pageID == pageID) {
+                this.jobs.splice(i, 1);//delete finished job
+                break;
+            }
+        }
+    }
 
     async seeder() {
         //for now if this.pid is set to 0 then project has been deleted and must be stopped
