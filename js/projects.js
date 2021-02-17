@@ -11,6 +11,9 @@ var CSConnection;
 
 function initConnection(c) {
     CSConnection = c;
+
+    CSConnection.onDisconnect.addListener(() => {CSConnection = null});
+
     CSConnection.onMessage.addListener(msg => {
         switch (msg.type) {
             case "Delete":
