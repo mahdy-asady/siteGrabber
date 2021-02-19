@@ -40,39 +40,42 @@ class Project {
         this.config = conf;
     }
 
+    /*
+        1. get link Content
+        2. save content to db
+        3. if it is a html file, extract links
+        4. save links
+    */
     worker(item) {
         return new Promise((resolve, reject) => {
             //change status;
             item.status = 10;
-            fetch(item.path)
-                .then(response => {
-                    item.status = 40;
-                    if(response.ok) {
-                        response.text().then(content => {
-                            //ok we have data. first write it to db
-                            let data = {
-                                id: item.pageID,
-                                pid: this.pid,
-                                time: Date.now(),
-                                path: item.path,
-                                content: content
-                            };
+            fetch(item.path).then(response => {
+                item.status = 40;
+                if(response.ok) {
+                    response.blob().then(content => {
+                        //ok we have data. first write it to db
+                        let data = {
+                            id: item.pageID,
+                            pid: this.pid,
+                            time: Date.now(),
+                            path: item.path,
+                            content: content
+                        };
+                        let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
 
-                            let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
-                            // TODO: we should check if it is text/html then track links
-                            request.onsuccess = (event) => {
-                                //change status
-                                item.status = 50;
-                                //now extract all available links
-                                const matches = getLinks(content);
-
-                                //console.log(matches);
+                        // if it is text/html then extract links
+                        if(response.headers.get('Content-Type').substr(0, 9) == "text/html") {
+                            //change status
+                            item.status = 50;
+                            //now extract all available links
+                            content.text().then((txt)=>{
+                                const matches = getLinks(txt);
                                 var counter = 50/matches.length;
                                 let progress = 50;
-                                matches.forEach((match, i) => {
-                                    //let txtUrl = match[1]? match[1]:match[2];
+                                matches.forEach((match) => {
                                     progress += counter;
-                                    item.status = Math.round( progress);
+                                    item.status = Math.round(progress);
                                     try {
                                         let url = new URL(match, item.path);
                                         let txtUrl = url.toString().substring(0,url.toString().length-url.hash.length);
@@ -87,26 +90,26 @@ class Project {
                                         }
                                     } catch (e) {}
                                 });
-                                item.status = 100;
-                                //
-                            };
-                            resolve();
-                        });
-                    } else {
-                        let data = {
-                            id: item.pageID,
-                            pid: this.pid,
-                            time: Date.now(),
-                            path: item.path,
-                            content: ""
-                        };
+                            });
+                        }
+                        resolve();
+                    });
+                } else {
+                    let data = {
+                        id: item.pageID,
+                        pid: this.pid,
+                        time: Date.now(),
+                        path: item.path,
+                        content: ""
+                    };
 
-                        db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
-                        reject();
-                    }
-                });
+                    db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
+                    reject();
+                }
+            });
         });
     }
+    
     addJob(pageID, path){
         let threadIndex = this.jobs.push({
             pageID : pageID,
