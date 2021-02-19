@@ -20,10 +20,10 @@ function initConnection(c) {
                 sendProjectsList();
                 break;
             case "Delete":
-                deleteProject(msg);
+                deleteProject(msg.pid);
                 break;
             case "toggleActivate":
-                toggleActivate(msg);
+                toggleActivate(msg.pid);
                 break;
             case "Export":
                 doExport(msg.pid);
@@ -40,10 +40,10 @@ async function sendMessage(msg) {
 }
 
 
-function deleteProject(msg) {
-    db.transaction("Projects", "readwrite").objectStore("Projects").delete(msg.pid).onsuccess = function(event) {
+function deleteProject(pid) {
+    db.transaction("Projects", "readwrite").objectStore("Projects").delete(pid).onsuccess = function(event) {
         let index = db.transaction("Pages", "readwrite").objectStore("Pages").index("pid");
-        let request = index.openKeyCursor(IDBKeyRange.only(msg.pid));
+        let request = index.openCursor(IDBKeyRange.only(pid));
 
         request.onsuccess = function(event) {
             let cursor = event.target.result;
@@ -58,13 +58,13 @@ function deleteProject(msg) {
 //we certainly need a cleanup function to run every startup to remove remaining rows in Pages store.
 //function cleanup(){}
 
-function toggleActivate(msg) {
+function toggleActivate(pid) {
     let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
     dbProjects.put({
-        pid:    msg.pid,
-        active:!Projects[msg.pid].isActive,
-        name:   Projects[msg.pid].name,
-        config: Projects[msg.pid].config,
+        pid:    pid,
+        active:!Projects[pid].isActive,
+        name:   Projects[pid].name,
+        config: Projects[pid].config,
 
     });
 }
@@ -77,7 +77,7 @@ function sendProjectsList() {
         //get pid of previously defined projects.
         var outDatedKeys = Object.keys(Projects);
         //update projects and also add new ones
-        event.target.result.forEach((item, i) => {
+        event.target.result.forEach(item => {
             rpt.push({
                 pid: item.pid,
                 isActive: item.active,
@@ -100,7 +100,7 @@ function sendProjectsList() {
             }
         });
         //remove deleted projects
-        outDatedKeys.forEach((item, i) => {
+        outDatedKeys.forEach(item => {
             //i dont know how exactly delete the object so seeder got stop
             Projects[item].pid = 0;
             delete Projects[item];
@@ -135,7 +135,7 @@ function doExport(activeProject){
                     //first remove protocol
                     url = url.slice(url.indexOf("://")+3);
                     // TODO: remove prohbited characters
-                    
+
                     console.log(url);
                     //adding files to zip
                     root.file(url, cursor.value.content);
