@@ -1,8 +1,8 @@
 //after connecting to database. every 3 seconds we will refresh projects
-initDB(() => {setInterval(initProjects, 500);});
+initDB(() => {});
+
 //the key of Projects array is pid of the projects, then we could easyly access every project in this list by accessing Projects[pid]
 var Projects = {};
-
 
 //*************************************************************************
 
@@ -16,6 +16,9 @@ function initConnection(c) {
 
     CSConnection.onMessage.addListener(msg => {
         switch (msg.type) {
+            case "getList":
+                sendProjectsList();
+                break;
             case "Delete":
                 deleteProject(msg);
                 break;
@@ -64,7 +67,7 @@ function toggleActivate(msg) {
 }
 
 
-function initProjects() {
+function sendProjectsList() {
     let dbProjects = db.transaction("Projects").objectStore("Projects");
     dbProjects.getAll().onsuccess = function(event) {
         let rpt = [];

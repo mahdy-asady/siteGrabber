@@ -1,10 +1,18 @@
 "use strict";
-initDB(function(){});
+initDB(()=>{});
 
 var activeProject; //current active dispay project
 
+
 var BGConnection = browser.runtime.connect({name:"siteGrabber"});
 BGConnection.onMessage.addListener(updateWindow);
+
+function doGetList() {
+    BGConnection.postMessage({type:"getList"});
+}doGetList();
+
+setInterval(()=>{doGetList()}, 500);
+
 
 function updateWindow(msg) {
     switch (msg.type) {
