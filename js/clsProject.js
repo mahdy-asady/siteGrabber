@@ -46,7 +46,6 @@ class Project {
             item.status = 10;
             fetch(item.path)
                 .then(response => {
-                    //doAnimate();
                     item.status = 40;
                     if(response.ok) {
                         response.text().then(content => {
@@ -60,22 +59,23 @@ class Project {
                             };
 
                             let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
+                            // TODO: we should check if it is text/html then track links
                             request.onsuccess = (event) => {
                                 //change status
                                 item.status = 50;
-                                //now extract <a>, <script>, <link>, <img> links
-                                const regexp = /(?:(?:<a|<link).* href=[\'"]?([^\'" >]+))|(?:(?:<img|<script).* src=[\'"]?([^\'" >]+))/gi;
-                                const matches = content.matchAll(regexp);
+                                //now extract all available links
+                                const matches = getLinks(content);
+
                                 //console.log(matches);
                                 var counter = 50/matches.length;
-                                for (const match of matches) {
-                                    let txtUrl = match[1]? match[1]:match[2];
-                                    item.status += counter;
+                                let progress = 50;
+                                matches.forEach((match, i) => {
+                                    //let txtUrl = match[1]? match[1]:match[2];
+                                    progress += counter;
+                                    item.status = Math.round( progress);
                                     try {
-
-                                        let url = new URL(txtUrl, item.path);
-                                        txtUrl = url.toString().substring(0,url.toString().length-url.hash.length);
-                                        //console.log(url);
+                                        let url = new URL(match, item.path);
+                                        let txtUrl = url.toString().substring(0,url.toString().length-url.hash.length);
                                         if(this.config.whiteList.indexOf(url.host) >= 0) {
                                             let newUrl = {
                                                 pid: this.pid,
@@ -86,7 +86,7 @@ class Project {
                                             db.transaction(["Pages"], "readwrite").objectStore("Pages").add(newUrl);
                                         }
                                     } catch (e) {}
-                                }
+                                });
                                 item.status = 100;
                                 //
                             };
@@ -179,4 +179,29 @@ class Project {
             }
         }
     }
+}
+
+/****** Regular Expression functions ******/
+
+let regexps = [
+    /(?:(?:<a|<link).* href=[\'"]?([^\'" >]+))/gi,      //gets <a href & <link href links
+    /(?:(?:<img|<script).* src=[\'"]?([^\'" >]+))/gi    //gets <img src & <script src links
+];
+
+function getLinks(content) {
+    var result = [];
+    regexps.forEach((regexp) => {
+        matches = content.matchAll(regexp);
+        for (const match of matches) {
+            result.push(match[1]);
+        }
+    });
+    return result;
+}
+
+function replaceLinks(content, replacer) {
+    regexps.forEach((regexp) => {
+        content = content.replace(regexp, replacer);
+    });
+    return content;
 }

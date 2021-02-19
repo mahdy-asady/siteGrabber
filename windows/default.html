@@ -12,6 +12,8 @@
 </style>
 <script type="text/javascript" src="/style/jquery-3.5.1.js"></script>
 <script defer type="text/javascript" src="/js/db.js"></script>
+<script defer type="text/javascript" src="/js/ext/FileSaver.min.js"></script>
+<script defer type="text/javascript" src="/js/ext/jszip.js"></script>
 <script defer type="text/javascript" src="/js/default.js"></script>
 </head>
 <body class="w3-white">
@@ -96,5 +98,26 @@ skip &nbsp Pause
    </div>
 
 </div>
+
+<div id="wExport" class="w3-modal">
+    <div class="w3-modal-content">
+        <div class="w3-container" style="padding-bottom:10px;">
+            <span id="wExportClose" class="w3-button w3-display-topright" style="display:none">&times;</span>
+            <p class="w3-border-bottom">Export Project</p>
+            <p>Preparing files ... </p>
+            <p id="counter">Text</p>
+            <div>
+                <div class="w3-light-grey">
+                    <div class="w3-container w3-green w3-center" style="width:25%">25%</div>
+                </div>
+            </div>
+            <div class="w3-padding-16">
+                <span style="float:right"><button id="wExportCancel">Cancel</button></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 </body>
 </html>
