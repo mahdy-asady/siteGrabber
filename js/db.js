@@ -39,8 +39,11 @@ function initDB(startFunc) {
 
       */
       let pagesStore = db.createObjectStore("Pages", { keyPath: "id", autoIncrement: true });
+      //pid index, usefull for searching all pages for specific project, used in deleting pages and export
       pagesStore.createIndex("pid", "pid", { unique: false });
+      //pageDated index, usefull for searching outdated pages
       pagesStore.createIndex("pageDated", ["pid", "time"], { unique: false });
+      //pathOfProject index, this index just is to create a unique rule on pages preventing saving a page twice in a project
       pagesStore.createIndex("pathOfProject", ["pid", "path"], { unique: true });
 
     };
