@@ -23,8 +23,11 @@ function initConnection(c) {
                 deleteProject(msg);
                 break;
             case "toggleActivate":
-                    toggleActivate(msg);
-                    break;
+                toggleActivate(msg);
+                break;
+            case "Export":
+                doExport(msg.pid);
+                break;
             default:
 
         }
@@ -108,4 +111,48 @@ function sendProjectsList() {
             projects: rpt
         });
     };
+}
+
+
+function doExport(activeProject){
+    var request = db.transaction("Projects").objectStore("Projects").get(activeProject);
+
+    request.onsuccess = function(event) {
+        // Do something with the request.result!
+        let pName = request.result.name;
+
+        let index = db.transaction("Pages").objectStore("Pages").index("pid");
+        //create jsZip
+        let zip = new JSZip();
+        //create a root folder based on project name and store all files in it
+        let root = zip.folder(pName);
+
+        index.openCursor(IDBKeyRange.only(activeProject)).onsuccess = function(event) {
+            let cursor = event.target.result;
+            if (cursor) {
+                if(cursor.value.time) {//just save files that has been scanned at last 1.
+                    let url = cursor.value.path;
+                    //first remove protocol
+                    url = url.slice(url.indexOf("://")+3);
+                    // TODO: remove prohbited characters
+                    
+                    console.log(url);
+                    //adding files to zip
+                    root.file(url, cursor.value.content);
+                }
+                cursor.continue();
+            }
+            else {
+                //saving file
+                zip.generateAsync({type:"blob"})
+                    .then(function(content) {
+                        sendMessage({
+                            type:"Export",
+                            name: pName + ".zip",
+                            content: content
+                        });
+                    });
+            }
+        }
+    }
 }

@@ -1,5 +1,5 @@
 "use strict";
-initDB(()=>{});
+//initDB(()=>{});
 
 var activeProject; //current active dispay project
 
@@ -21,6 +21,9 @@ function updateWindow(msg) {
             break;
         case "Projects":
             updateProjects(msg);
+            break;
+        case "Export":
+            saveFile(msg);
             break;
     }
 
@@ -115,56 +118,25 @@ $("#addProject").click(function () {
 });
 
 
+var wExportCanceled;
 $("#projectExport").click(function(){
+    wExportCanceled = false;
     $("#wExport").css("display", "block");
-    doExport();
+    BGConnection.postMessage({
+        type:"Export",
+        pid: activeProject
+    });
 });
 
 $("#wExportCancel").click(function() {
     // TODO: Cancel the job
-    $("#projectExport").css("display", "none");
+    $("#wExport").css("display", "none");
+    wExportCanceled = true;
 });
 
-function doExport(){
-    var request = db.transaction("Projects").objectStore("Projects").get(activeProject);
 
-    request.onsuccess = function(event) {
-        // Do something with the request.result!
-        let pName = request.result.name;
-
-        let index = db.transaction("Pages").objectStore("Pages").index("pid");
-        //create jsZip
-        let zip = new JSZip();
-        //create a root folder based on project name and store all files in it
-        let root = zip.folder(pName);
-
-        index.openCursor(IDBKeyRange.only(activeProject)).onsuccess = function(event) {
-            let cursor = event.target.result;
-            if (cursor) {
-                if(cursor.value.time) {//just save files that has been scanned at last 1.
-                    let url = cursor.value.path;
-                    //first remove protocol
-                    url = url.slice(url.indexOf("://")+3);
-                    // TODO: remove prohbited characters
-
-                    $("#counter").text(url);
-                    //adding files to zip
-                    root.file(url, cursor.value.content);
-                }
-                cursor.continue();
-            }
-            else {
-                //saving file
-                zip.generateAsync({type:"blob"})
-                    .then(function(content) {
-                        // see FileSaver.js
-                        saveAs(content, pName + ".zip");
-                        $("#projectExport").css("display", "none");
-                    });
-            }
-        };
-
-    };
-
-
+function saveFile(msg) {
+    $("#wExport").css("display", "none");
+    if(!wExportCanceled)
+        saveAs(msg.content, msg.name);
 }

@@ -20,6 +20,7 @@
 
   "background": {
     "scripts": [
+        "js/ext/jszip.js",
         "js/windowManager.js",
         "js/db.js",
         "js/clsProject.js",
@@ -29,9 +30,7 @@
 
   "browser_action": {
     "browser_style": true,
-//
     "default_popup": "windows/new.html",
-//
     "default_icon": "style/grabber.svg",
     "default_title": "SiteGrabber"
   }
