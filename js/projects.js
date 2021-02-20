@@ -1,8 +1,8 @@
 //after connecting to database. every 3 seconds we will refresh projects
-initDB(() => {});
+initDB(initProjects);
 
 //the key of Projects array is pid of the projects, then we could easyly access every project in this list by accessing Projects[pid]
-var Projects = {};
+var Projects = {}
 
 //*************************************************************************
 
@@ -17,7 +17,10 @@ function initConnection(c) {
     CSConnection.onMessage.addListener(msg => {
         switch (msg.type) {
             case "getList":
-                sendProjectsList();
+                listProjects();
+                break;
+            case "new":
+                newProject(msg.data);
                 break;
             case "Delete":
                 deleteProject(msg.pid);
@@ -26,7 +29,7 @@ function initConnection(c) {
                 toggleActivate(msg.pid);
                 break;
             case "Export":
-                doExport(msg.pid);
+                exportProject(msg.pid);
                 break;
             default:
 
@@ -39,30 +42,76 @@ async function sendMessage(msg) {
         CSConnection.postMessage(msg);
 }
 
+//*************************************************************************
+
+function initProjects() {
+    let dbProjects = db.transaction("Projects").objectStore("Projects");
+    dbProjects.getAll().onsuccess = function(event) {
+        event.target.result.forEach(item => {
+            //create project
+            Projects[item.pid] = new Project(item.pid, item.name, item.active, item.config);
+        });
+    }
+}
+
+
+function newProject(data) {
+    let firstLink = data.firstLink;
+    delete data.firstLink;
+
+    var transaction = db.transaction("Projects", "readwrite");
+    var objectStore = transaction.objectStore("Projects");
+    var request = objectStore.add(data);
+    request.onsuccess = function(event) {
+        let pid = event.target.result;
+        //event.target.result
+        let Page ={
+            pid: pid,
+            time: 0,
+            path: firstLink
+        };
+
+        var pgTransaction = db.transaction("Pages", "readwrite");
+        var Pages = pgTransaction.objectStore("Pages");
+        var PagesRequest = Pages.add(Page);
+        PagesRequest.onsuccess = function(event) {
+            console.log(data);
+            Projects[pid] = new Project(pid, data.name, data.active, data.config);
+            sendMessage({
+                type:"ok"
+            });
+        };
+    };
+
+}
 
 function deleteProject(pid) {
-    db.transaction("Projects", "readwrite").objectStore("Projects").delete(pid).onsuccess = function(event) {
+    //stop project
+    Projects[pid].pid = 0;
+    delete Projects[pid];
+    //remove from db
+    db.transaction("Projects", "readwrite").objectStore("Projects").delete(pid).onsuccess = (event) => {
         let index = db.transaction("Pages", "readwrite").objectStore("Pages").index("pid");
         let request = index.openCursor(IDBKeyRange.only(pid));
-
         request.onsuccess = function(event) {
             let cursor = event.target.result;
-
             if (cursor) {
                 cursor.delete();
                 cursor.continue();
             }
-        };
-    };
+        }
+    }
 }
 //we certainly need a cleanup function to run every startup to remove remaining rows in Pages store.
 //function cleanup(){}
 
 function toggleActivate(pid) {
+    Projects[pid].setActive(!Projects[pid].isActive);
+
     let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
     dbProjects.put({
         pid:    pid,
-        active:!Projects[pid].isActive,
+        active: Projects[pid].isActive,
         name:   Projects[pid].name,
         config: Projects[pid].config,
 
@@ -70,51 +119,24 @@ function toggleActivate(pid) {
 }
 
 
-function sendProjectsList() {
-    let dbProjects = db.transaction("Projects").objectStore("Projects");
-    dbProjects.getAll().onsuccess = function(event) {
-        let rpt = [];
-        //get pid of previously defined projects.
-        var outDatedKeys = Object.keys(Projects);
-        //update projects and also add new ones
-        event.target.result.forEach(item => {
-            rpt.push({
-                pid: item.pid,
-                isActive: item.active,
-                name: item.name
-            });
-            //so Projects[item.pid] is available yet. then remove from outdated projects
-            const index = outDatedKeys.indexOf(item.pid.toString());
-            if (index > -1) {
-              outDatedKeys.splice(index, 1);
-            }
+function listProjects() {
+    let rpt = [];
+    Object.keys(Projects).forEach(item => {
+        rpt.push({
+            pid: Projects[item].pid,
+            isActive: Projects[item].isActive,
+            name: Projects[item].name
+        });
+    });
 
-            if(!(item.pid in Projects)) {
-                //create project
-                Projects[item.pid] = new Project(item.pid, item.name, item.active, item.config);
-            }
-            else {
-                //update project
-                Projects[item.pid].setActive(item.active);
-                Projects[item.pid].setConfig(item.config);
-            }
-        });
-        //remove deleted projects
-        outDatedKeys.forEach(item => {
-            //i dont know how exactly delete the object so seeder got stop
-            Projects[item].pid = 0;
-            delete Projects[item];
-        });
-
-        sendMessage({
-            type:"Projects",
-            projects: rpt
-        });
-    };
+    sendMessage({
+        type:"Projects",
+        projects: rpt
+    });
 }
 
 
-function doExport(activeProject){
+function exportProject(activeProject){
     var request = db.transaction("Projects").objectStore("Projects").get(activeProject);
 
     request.onsuccess = function(event) {

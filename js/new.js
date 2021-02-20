@@ -1,5 +1,17 @@
 "use strict";
-initDB(function(){});
+
+var BGConnection = browser.runtime.connect({name:"siteGrabber"});
+BGConnection.onMessage.addListener(updateWindow);
+
+function updateWindow(msg) {
+    switch (msg.type) {
+        case "ok":
+            window.close();
+            break;
+        case "error":
+            break;
+    }
+}
 
 $(function() {
     browser.tabs.query({currentWindow: true, active: true}).then((tabs) => {
@@ -59,38 +71,23 @@ $(function() {
         }
 
         var data = {
-            name: $("#txtName").val(),
-            active: $("#chkActive").is(":checked"),
+            name:               $("#txtName").val(),
+            firstLink:          $("#txtStartUrl").val(),
+            active:             $("#chkActive").is(":checked"),
             config: {
-                whiteList:[],
-                downloadLimit: $("#txtConcurrentLimit").val(),
-                maxSize: $("#txtMaxFileSize").val(),
-                lifeTime: $("#txtIndexAge").val()
+                whiteList:      [],
+                downloadLimit:  $("#txtConcurrentLimit").val(),
+                maxSize:        $("#txtMaxFileSize").val(),
+                lifeTime:       $("#txtIndexAge").val()
             }
         };
         $("#lstDomains > option").each(function() {
             data.config.whiteList.push(this.value);
         });
 
-
-        var transaction = db.transaction("Projects", "readwrite");
-
-        var objectStore = transaction.objectStore("Projects");
-        var request = objectStore.add(data);
-        request.onsuccess = function(event) {
-            //event.target.result
-            let data ={
-                pid: event.target.result,
-                time: 0,
-                path: $("#txtStartUrl").val()
-            };
-
-            var pgTransaction = db.transaction("Pages", "readwrite");
-
-            var Pages = pgTransaction.objectStore("Pages");
-            var PagesRequest = Pages.add(data);
-            PagesRequest.onsuccess = function(event) {window.close();};
-
-        };
+        BGConnection.postMessage({
+            type: "new",
+            data: data
+        });
     });
 });
