@@ -22,6 +22,9 @@ function updateWindow(msg) {
         case "Projects":
             updateProjects(msg);
             break;
+        case "ExportStatus":
+            updateExportStatus(msg);
+            break;
         case "Export":
             saveFile(msg);
             break;
@@ -121,7 +124,11 @@ $("#addProject").click(function () {
 var wExportCanceled;
 $("#projectExport").click(function(){
     wExportCanceled = false;
-    $("#wExport").css("display", "block");
+
+    $("#exportProgressBar").text("0%");
+    $("#exportProgressBar").css("width", 0);
+
+//    $("#wExport").css("display", "block");
     BGConnection.postMessage({
         type:"Export",
         pid: activeProject
@@ -134,6 +141,13 @@ $("#wExportCancel").click(function() {
     wExportCanceled = true;
 });
 
+function updateExportStatus(msg) {
+    $("#wExport").css("display", "block");
+    $("#exportCurrentFile").text(msg.currentFile);
+    let percent = Math.round(msg.status) + "%";
+    $("#exportProgressBar").text(percent);
+    $("#exportProgressBar").css("width", percent);
+}
 
 function saveFile(msg) {
     $("#wExport").css("display", "none");

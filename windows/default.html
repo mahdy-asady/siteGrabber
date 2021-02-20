@@ -103,19 +103,18 @@ skip &nbsp Pause
             <span id="wExportClose" class="w3-button w3-display-topright" style="display:none">&times;</span>
             <p class="w3-border-bottom">Export Project</p>
             <p>Preparing files ... </p>
-            <p id="counter">Text</p>
+            <p id="exportCurrentFile" style="overflow:hidden; height:1.5em;"></p>
             <div>
                 <div class="w3-light-grey">
-                    <div class="w3-container w3-green w3-center" style="width:25%">25%</div>
+                    <div id="exportProgressBar" class="w3-container w3-green w3-center" style="width:0">&nbsp</div>
                 </div>
             </div>
             <div class="w3-padding-16">
-                <span style="float:right"><button id="wExportCancel">Cancel</button></span>
+                <span style="float:right; display:none"><button id="wExportCancel">Cancel</button></span>
             </div>
         </div>
     </div>
 </div>
-
 
 </body>
 </html>
