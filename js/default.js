@@ -1,14 +1,13 @@
 "use strict";
-//initDB(()=>{});
 
 var activeProject; //current active dispay project
 
 
-var BGConnection = browser.runtime.connect({name:"siteGrabber"});
+var BGConnection = browser.runtime.connect({name:"siteGrabberMain"});
 BGConnection.onMessage.addListener(updateWindow);
 
 function doGetList() {
-    BGConnection.postMessage({type:"getList"});
+    BGConnection.postMessage({type:"list"});
 }doGetList();
 
 setInterval(()=>{doGetList()}, 500);
@@ -20,6 +19,7 @@ function updateWindow(msg) {
             updatePages(msg);
             break;
         case "Projects":
+            console.log("Project list received!");
             updateProjects(msg);
             break;
         case "ExportStatus":

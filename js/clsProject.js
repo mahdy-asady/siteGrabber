@@ -23,7 +23,7 @@ class Project {
         this.seeder();
         setInterval(()=>{
             //if(this.isActive) {
-                sendMessage({
+                sendMessage("siteGrabberMain", {
                     type:"Pages",
                     pid:this.pid,
                     jobs: this.jobs
@@ -109,7 +109,7 @@ class Project {
             });
         });
     }
-    
+
     addJob(pageID, path){
         let threadIndex = this.jobs.push({
             pageID : pageID,

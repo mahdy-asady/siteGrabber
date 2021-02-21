@@ -1,6 +1,6 @@
 "use strict";
 
-var BGConnection = browser.runtime.connect({name:"siteGrabber"});
+var BGConnection = browser.runtime.connect({name:"siteGrabberNew"});
 BGConnection.onMessage.addListener(updateWindow);
 
 function updateWindow(msg) {
