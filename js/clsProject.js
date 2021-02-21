@@ -3,7 +3,8 @@ class Project {
     name;
     isActive = false;
     config;
-
+    intervalID;
+    enabled = true;
     /*
         jobs array
         [
@@ -21,15 +22,18 @@ class Project {
         this.isActive = isActive
         this.config = config;
         this.seeder();
-        setInterval(()=>{
-            //if(this.isActive) {
-                sendMessage("siteGrabberMain", {
-                    type:"Pages",
-                    pid:this.pid,
-                    jobs: this.jobs
-                });
-            //}
+        this.intervalID = setInterval(()=>{
+            sendMessage("siteGrabberMain", {
+                type:"Pages",
+                pid:this.pid,
+                jobs: this.jobs
+            });
         }, 200);
+    }
+
+    destructor() {
+        this.enabled = false;
+        clearInterval(this.intervalID);
     }
 
     setActive(isActive) {
@@ -133,7 +137,7 @@ class Project {
 
     async seeder() {
         //for now if this.pid is set to 0 then project has been deleted and must be stopped
-        while(this.pid) {
+        while(this.enabled) {
             //console.log("Project " + this.pid + " jobs:" + this.jobs.length);
 
             let doWait = false;

@@ -88,7 +88,8 @@ function newProject(data) {
 
 function deleteProject(pid) {
     //stop project
-    Projects[pid].pid = 0;
+    Projects[pid].destructor();
+    //Projects[pid] = null;
     delete Projects[pid];
     //remove from db
     db.transaction("Projects", "readwrite").objectStore("Projects").delete(pid).onsuccess = (event) => {

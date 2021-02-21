@@ -1,6 +1,6 @@
 "use strict";
 
-var activeProject; //current active dispay project
+var activeProject = 0; //current active dispay project
 
 
 var BGConnection = browser.runtime.connect({name:"siteGrabberMain"});
@@ -19,7 +19,6 @@ function updateWindow(msg) {
             updatePages(msg);
             break;
         case "Projects":
-            console.log("Project list received!");
             updateProjects(msg);
             break;
         case "ExportStatus":
@@ -74,8 +73,11 @@ function highlightActiveProject() {
     $(".project-list ul li").removeClass("w3-green w3-hover-light-green");
     $(".project-list ul li").addClass("w3-hover-light-grey");
 
+
     $(".project-list ul li").each(function(){
-        if($(this).data().pid == activeProject) {
+        if($(this).data().pid == activeProject || activeProject == 0) {
+            if(activeProject == 0) activeProject = $(this).data().pid;
+
             $(this).addClass("w3-green w3-hover-light-green");
             $(this).removeClass("w3-hover-light-grey");
 
@@ -108,11 +110,13 @@ $("#projectPause").click(function() {
 });
 
 $("#projectDelete").click(function() {
-    if((activeProject != undefined) && confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
+    if((activeProject != 0) && confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
         BGConnection.postMessage({
             type:"Delete",
             pid: activeProject
         });
+        activeProject = 0;
+        $("#activePages").find("tr:gt(0)").remove();
     }
 });
 
