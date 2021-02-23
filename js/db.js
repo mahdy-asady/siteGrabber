@@ -6,7 +6,6 @@ if (!window.indexedDB) {
 var db;
 function initDB(startFunc) {
     var request = window.indexedDB.open("__DATA__", 1);
-    console.log("db.open()!");
 
     request.onerror = function(event) {
       console.log("Why didn't you allow my web app to use IndexedDB?!");
@@ -15,11 +14,10 @@ function initDB(startFunc) {
 
     request.onupgradeneeded = function(event) {
       let db = event.target.result;
-      console.log("onupgradeneeded!");
       /*
         Project store:
             * pid        **key
-            * active
+            * isActive
             * name
             * config
                 * whiteList
@@ -49,8 +47,13 @@ function initDB(startFunc) {
     };
 
     request.onsuccess = function(event) {
-      console.log("db.success!");
       db = event.target.result;
-      startFunc();
+
+      let isFunction = function(obj) {
+        return !!(obj && obj.constructor && obj.call && obj.apply);
+      };
+
+      if(isFunction(startFunc))
+        startFunc();
     };
 }

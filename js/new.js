@@ -73,7 +73,7 @@ $(function() {
         var data = {
             name:               $("#txtName").val(),
             firstLink:          $("#txtStartUrl").val(),
-            active:             $("#chkActive").is(":checked"),
+            isActive:             $("#chkActive").is(":checked"),
             config: {
                 whiteList:      [],
                 downloadLimit:  $("#txtConcurrentLimit").val(),

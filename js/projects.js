@@ -50,7 +50,7 @@ function initProjects() {
     dbProjects.getAll().onsuccess = function(event) {
         event.target.result.forEach(item => {
             //create project
-            Projects[item.pid] = new Project(item.pid, item.name, item.active, item.config);
+            Projects[item.pid] = new Project(item.pid, item.name, item.isActive, item.config);
         });
     }
 }
@@ -76,8 +76,7 @@ function newProject(data) {
         var Pages = pgTransaction.objectStore("Pages");
         var PagesRequest = Pages.add(Page);
         PagesRequest.onsuccess = function(event) {
-            console.log(data);
-            Projects[pid] = new Project(pid, data.name, data.active, data.config);
+            Projects[pid] = new Project(pid, data.name, data.isActive, data.config);
             sendMessage("siteGrabberNew", {
                 type:"ok"
             });
@@ -113,7 +112,7 @@ function toggleActivate(pid) {
     let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
     dbProjects.put({
         pid:    pid,
-        active: Projects[pid].isActive,
+        isActive: Projects[pid].isActive,
         name:   Projects[pid].name,
         config: Projects[pid].config,
 
