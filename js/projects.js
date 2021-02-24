@@ -155,12 +155,10 @@ function exportProject(activeProject){
             if (cursor) {
                 if(cursor.value.time) {//just save files that has been scanned at last 1.
                     let url = cursor.value.path;
-                    //first remove protocol
-                    url = url.slice(url.indexOf("://")+3);
-                    // TODO: remove prohbited characters
-
+                    let path = getFileName(url, cursor.value.header);
+                    //console.log(url, "Converted to", path);
                     //adding files to zip
-                    root.file(url, cursor.value.content);
+                    root.file(path, cursor.value.content);
                 }
                 cursor.continue();
             }
@@ -187,4 +185,55 @@ function exportProject(activeProject){
             }
         }
     }
+}
+
+function getFileName(url, contentType) {
+    if(typeof contentType === 'undefined') contentType = "";
+
+    //first remove protocol
+    let path = url.slice(url.indexOf("://") + 3);
+
+    //if last character of url is / then we should add index.html as file name to it
+    if(path.right(1) == "/")
+        path = path + "index"; //we will add extension in next level
+
+    //if it is a html file then add proper extension
+    if(contentType.left(9) == "text/html") {
+        if(url.right(4) != ".htm" && url.right(5) != ".html") {
+            //add .htm extensoin
+            path = path + ".htm";
+        }
+    }
+
+    // Now remove prohbited characters
+    encodes = {
+        ":"  : "%3A",
+        "<"  : "%3C",
+        ">"  : "%3E",
+        "\"" : "%22",
+        "\\" : "%5C",
+        "|"  : "%7C",
+        "?"  : "%3F",
+        "*"  : "%2A"
+    };
+    path = path.replaceAll(encodes);
+
+    return path;
+}
+
+String.prototype.right = function (chars) {
+    return this.substring(this.length - chars);
+}
+
+String.prototype.left = function (chars) {
+    return this.substring(0, chars);
+}
+
+String.prototype.replaceAll = function (characterArray) {
+    let str = this;
+    for (var ch in characterArray) {
+        str = str.replace(ch, characterArray[ch]);
+    }
+
+    return str;
 }

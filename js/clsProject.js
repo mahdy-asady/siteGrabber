@@ -60,11 +60,12 @@ class Project {
                     response.blob().then(content => {
                         //ok we have data. first write it to db
                         let data = {
-                            id: item.pageID,
-                            pid: this.pid,
-                            time: Date.now(),
-                            path: item.path,
-                            content: content
+                            id:         item.pageID,
+                            pid:        this.pid,
+                            time:       Date.now(),
+                            path:       item.path,
+                            header:     response.headers.get('Content-Type'),
+                            content:    content
                         };
                         let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
 
@@ -136,15 +137,12 @@ class Project {
     }
 
     async seeder() {
-        //for now if this.pid is set to 0 then project has been deleted and must be stopped
         while(this.enabled) {
-            //console.log("Project " + this.pid + " jobs:" + this.jobs.length);
-
             let doWait = false;
             if(!this.isActive || this.jobs.length >= this.config.downloadLimit) {
                 doWait = true;
             } else {
-                //get pages where are for this project and are elder than the age specified for update(lifetime)
+                //get pages where are for this project and are older than the age specified for update(lifetime)
                 let Pages = db.transaction("Pages", "readonly").objectStore("Pages");
                 let lifeTime = Date.now() - this.config.lifeTime *24*60*60*1000;
                 var range = IDBKeyRange.bound([this.pid, 0],[this.pid, lifeTime]);
