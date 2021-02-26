@@ -147,6 +147,7 @@ $("#wExportCancel").click(function() {
 
 function updateExportStatus(msg) {
     $("#wExport").css("display", "block");
+    $("#exportMessage").text(msg.message);
     $("#exportCurrentFile").text(msg.currentFile);
     let percent = Math.round(msg.status) + "%";
     $("#exportProgressBar").text(percent);
