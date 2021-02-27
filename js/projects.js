@@ -173,6 +173,9 @@ function exportProject(activeProject){
 
                     let header = (typeof page.header === 'undefined')? "" : page.header;
                     let path = getFileName(page.path, header);
+                    if(i == 1) {//first link. we should create a root index that links to it
+                        root.file("index.htm", createIndexPage(path));
+                    }
                     var content = page.content;
 
                     if(header.left(9) == "text/html") {
@@ -278,7 +281,6 @@ function getRelativePath(path, base) {
     }
     newPath = "../".repeat(baseChunks.length-1);
     newPath += pathChunks.join("/");
-    console.log(newPath);
     return newPath;
 }
 
@@ -297,4 +299,14 @@ String.prototype.replaceAll = function (characterArray) {
     }
 
     return str;
+}
+
+function createIndexPage(path) {
+    return `<html>
+<head>
+<title>Powered by siteGrabber</title>
+</head>
+<body>
+<h1><a href="${path}">Start here</a></h1>
+</body></html>`;
 }
