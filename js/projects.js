@@ -188,8 +188,12 @@ function exportProject(activeProject){
                                 //if not, then just return link address
                                 if(allPages[txtUrl] && allPages[txtUrl].time > 0) {
                                     txtUrl = getFileName(txtUrl, allPages[txtUrl].header)
+                                    txtUrl = getRelativePath(txtUrl, path);
                                 }
+
                                 result = result + txtUrl;
+                                //Add hash and query if there is
+
                                 //console.log(result);
                                 return result;
                             } catch (e) {
@@ -255,6 +259,27 @@ function getFileName(url, contentType) {
     path = path.replaceAll(encodes);
 
     return path;
+}
+
+
+//   www.google.com path base on index.html
+//   www.google.com path rela path host p.html
+
+
+//get relative path of two physical file
+function getRelativePath(path, base) {
+    let pathChunks = path.split("/");
+    let baseChunks = base.split("/");
+    let newPath = "";
+    //remove equal parts of path
+    while(pathChunks[0] == baseChunks[0] && pathChunks.length > 0) {
+        pathChunks.shift();
+        baseChunks.shift();
+    }
+    newPath = "../".repeat(baseChunks.length-1);
+    newPath += pathChunks.join("/");
+    console.log(newPath);
+    return newPath;
 }
 
 String.prototype.right = function (chars) {
