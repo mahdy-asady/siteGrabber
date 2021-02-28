@@ -185,7 +185,9 @@ function exportProject(activeProject){
                             let result = tag.left(tag.length - url.length);
                             try {
                                 url = new URL(url, page.path);
-                                let txtUrl = url.protocol + "//" + url.host + url.pathname;
+                                let hash = url.hash;
+                                url.hash = "";  //remove hash part of url
+                                let txtUrl = url.href;
                                 //ok we have link address. first wa have to ensure that we already downloaded this link.
                                 //if so then just get header content and get file address of it
                                 //if not, then just return link address
@@ -195,8 +197,8 @@ function exportProject(activeProject){
                                 }
 
                                 result = result + txtUrl;
-                                //Add hash and query if there is
-
+                                //Add hash if there is
+                                result = result + hash;
                                 //console.log(result);
                                 return result;
                             } catch (e) {

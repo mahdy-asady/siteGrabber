@@ -83,7 +83,8 @@ class Project {
                                     item.status = Math.round(progress);
                                     try {
                                         let url = new URL(match, item.path);
-                                        let txtUrl = url.protocol + "//" + url.host + url.pathname;
+                                        url.hash = "";  //remove hash part of url
+                                        let txtUrl = url.href
                                         if(this.config.whiteList.indexOf(url.host) >= 0) {
                                             let newUrl = {
                                                 pid: this.pid,
