@@ -181,10 +181,9 @@ function exportProject(activeProject){
                     if(header.left(9) == "text/html") {
                         //ok now replace links...
                         content = await content.text();
-                        content = replaceLinks(content, (tag, g1, url) =>{
-                            let result = tag.left(tag.length - url.length);
+                        content = replaceLinks(content, (tag, g1, href) =>{
                             try {
-                                url = new URL(url, page.path);
+                                url = new URL(href, page.path);
                                 let hash = url.hash;
                                 url.hash = "";  //remove hash part of url
                                 let txtUrl = url.href;
@@ -196,11 +195,9 @@ function exportProject(activeProject){
                                     txtUrl = getRelativePath(txtUrl, path);
                                 }
 
-                                result = result + txtUrl;
                                 //Add hash if there is
-                                result = result + hash;
-                                //console.log(result);
-                                return result;
+                                txtUrl = txtUrl + hash;
+                                return tag.replace(href, txtUrl);
                             } catch (e) {
                                 return tag;
                             }
