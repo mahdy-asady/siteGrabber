@@ -181,7 +181,7 @@ function exportProject(activeProject){
                     if(header.left(9) == "text/html") {
                         //ok now replace links...
                         content = await content.text();
-                        content = replaceLinks(content, (tag, url) =>{
+                        content = replaceLinks(content, (tag, g1, url) =>{
                             let result = tag.left(tag.length - url.length);
                             try {
                                 url = new URL(url, page.path);

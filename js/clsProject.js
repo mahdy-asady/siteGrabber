@@ -190,8 +190,10 @@ class Project {
 /****** Regular Expression functions ******/
 
 let regexps = [
-    /(?:(?:<a|<link).* href=[\'"]?([^\'" >]+))/gi,      //gets <a href & <link href links
-    /(?:(?:<img|<script).* src=[\'"]?([^\'" >]+))/gi    //gets <img src & <script src links
+    /<a(?:[^>]*?)?href=(["'])(.*?)\1/gi,        //gets <a href links
+    /<link(?:[^>]*?)?href=(["'])(.*?)\1/gi,     //gets <link href links
+    /<img(?:[^>]*?)?src=(["'])(.*?)\1/gi,       //gets <img src links
+    /<script(?:[^>]*?)?src=(["'])(.*?)\1/gi     //gets <script src links
 ];
 
 function getLinks(content) {
@@ -199,7 +201,7 @@ function getLinks(content) {
     regexps.forEach((regexp) => {
         matches = content.matchAll(regexp);
         for (const match of matches) {
-            result.push(match[1]);
+            result.push(match[2]);
         }
     });
     return result;
