@@ -63,6 +63,7 @@ $(function() {
     $("#btnSave").click(function() {
         //check if hostname of initial page is in lstDomains
         let url = new URL($("#txtStartUrl").val());
+        url.hash = "";
         var hasSelfDomain = $("#lstDomains option[value='" + url.hostname + "']").length;
         if(!hasSelfDomain) {
             if(!confirm("The initial url's domain is not added to Allowed Domains list.\nAdd it and continue?")) return;
@@ -72,7 +73,7 @@ $(function() {
 
         var data = {
             name:               $("#txtName").val(),
-            firstLink:          $("#txtStartUrl").val(),
+            firstLink:          url.href,
             isActive:             $("#chkActive").is(":checked"),
             config: {
                 whiteList:      [],
