@@ -169,7 +169,7 @@ function exportProject(activeProject){
                 });
 
                 page = allPages[p];
-                if(page.time) {//just save files that has been scanned at last 1.
+                if(page.time && (page.content.size>0)) {//just save files that has been scanned at last 1.
 
                     let header = (typeof page.header === 'undefined')? "" : page.header;
                     let path = getFileName(page.path, header);
@@ -182,7 +182,7 @@ function exportProject(activeProject){
                         //ok now replace links...
                         content = await content.text();
                         content = replaceLinks(content, (tag, g1, href) =>{
-                            try {
+                            //try {
                                 url = new URL(href, page.path);
                                 let hash = url.hash;
                                 url.hash = "";  //remove hash part of url
@@ -198,9 +198,9 @@ function exportProject(activeProject){
                                 //Add hash if there is
                                 txtUrl = txtUrl + hash;
                                 return tag.replace(href, txtUrl);
-                            } catch (e) {
-                                return tag;
-                            }
+                            //} catch (e) {
+                            //    return tag;
+                            //}
                         });
                     }
                     //adding files to zip
@@ -232,6 +232,7 @@ function exportProject(activeProject){
 }
 
 function getFileName(url, contentType) {
+    if(typeof contentType === 'undefined') contentType = "";
     //first remove protocol
     let path = url.slice(url.indexOf("://") + 3);
 
@@ -278,7 +279,8 @@ function getRelativePath(path, base) {
         pathChunks.shift();
         baseChunks.shift();
     }
-    newPath = "../".repeat(baseChunks.length-1);
+    if(baseChunks.length>0)
+        newPath = "../".repeat(baseChunks.length-1);
     newPath += pathChunks.join("/");
     return newPath;
 }
