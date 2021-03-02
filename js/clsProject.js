@@ -59,57 +59,28 @@ class Project {
                 if(response.ok) {
                     response.blob().then(content => {
                         //ok we have data. first write it to db
-                        let data = {
-                            id:         item.pageID,
-                            pid:        this.pid,
-                            time:       Date.now(),
-                            path:       item.path,
-                            header:     response.headers.get('Content-Type'),
-                            content:    content
-                        };
-                        let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
+                        this.savePage(item.pageID, content, response.headers.get('Content-Type'));
 
                         // if it is text/html then extract links
                         if(response.headers.get('Content-Type').substr(0, 9) == "text/html") {
                             //change status
                             item.status = 50;
                             //now extract all available links
-                            content.text().then((txt)=>{
+                            content.text().then(txt=>{
                                 const matches = getLinks(txt);
                                 var counter = 50/matches.length;
                                 let progress = 50;
                                 matches.forEach((match) => {
                                     progress += counter;
                                     item.status = Math.round(progress);
-                                    try {
-                                        let url = new URL(match, item.path);
-                                        url.hash = "";  //remove hash part of url
-                                        let txtUrl = url.href
-                                        if(this.config.whiteList.indexOf(url.host) >= 0) {
-                                            let newUrl = {
-                                                pid: this.pid,
-                                                time: 0,
-                                                path: txtUrl
-                                            };
-                                            //console.log(newUrl);
-                                            db.transaction(["Pages"], "readwrite").objectStore("Pages").add(newUrl);
-                                        }
-                                    } catch (e) {}
+                                    this.saveLink(match, item.path, item.pageID);
                                 });
                             });
                         }
                         resolve();
                     });
                 } else {
-                    let data = {
-                        id: item.pageID,
-                        pid: this.pid,
-                        time: Date.now(),
-                        path: item.path,
-                        content: ""
-                    };
-
-                    db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
+                    this.savePage(item.pageID, "", "");
                     reject();
                 }
             });
@@ -184,6 +155,35 @@ class Project {
                 await new Promise(r => setTimeout(r, 500));
             }
         }
+    }
+
+    saveLink(currentURL, baseURL, pageID) {
+        try {
+            let url = new URL(currentURL, baseURL);
+            url.hash = "";  //remove hash part of url
+            let txtUrl = url.href
+            if(this.config.whiteList.indexOf(url.host) >= 0) {
+                let newUrl = {
+                    pid: this.pid,
+                    time: 0,
+                    path: txtUrl,
+                    referrer: pageID
+                };
+                db.transaction(["Pages"], "readwrite").objectStore("Pages").add(newUrl);
+            }
+        } catch (e) {}
+    }
+
+    savePage(pageID, content, contentType) {
+        var request = db.transaction(["Pages"], "readonly").objectStore("Pages").get(pageID);
+        request.onsuccess = event=>{
+            let data    =   event.target.result;
+            data.time   =   Date.now();
+            data.header =   contentType;
+            data.content=   content;
+
+            let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
+        };
     }
 }
 
