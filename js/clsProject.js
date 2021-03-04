@@ -184,10 +184,11 @@ class Project {
     savePage(pageID, content, contentType) {
         var request = db.transaction(["Pages"], "readonly").objectStore("Pages").get(pageID);
         request.onsuccess = event=>{
-            let data    =   event.target.result;
-            data.time   =   Date.now();
-            data.header =   contentType;
-            data.content=   content;
+            let data      = event.target.result;
+            data.time     = Date.now();
+            data.header   = contentType;
+            data.content  = content;
+            data.filePath = getFileName(data.path, contentType);
 
             let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
         };

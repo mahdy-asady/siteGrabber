@@ -191,7 +191,8 @@ function exportProject(activeProject){
                                 //if so then just get header content and get file address of it
                                 //if not, then just return link address
                                 if(allPages[txtUrl] && allPages[txtUrl].time > 0) {
-                                    txtUrl = getFileName(txtUrl, allPages[txtUrl].header)
+                                    //txtUrl = getFileName(txtUrl, allPages[txtUrl].header)
+                                    txtUrl = allPages[txtUrl].filePath;
                                     txtUrl = getRelativePath(txtUrl, path);
                                 }
 
