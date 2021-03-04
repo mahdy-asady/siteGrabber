@@ -58,11 +58,18 @@ class Project {
                 item.status = 40;
                 if(response.ok) {
                     response.blob().then(content => {
+                        let contentType = response.headers.get('Content-Type');
                         //ok we have data. first write it to db
-                        this.savePage(item.pageID, content, response.headers.get('Content-Type'));
+                        if(response.redirected) { //we have a redirected page
+                            //so we have to save main link as a redirect page and save content as separate page
+                            //here we just created a virtual page that have the redirected url inside itself
+                            content = getRedirectPage(response.url);
+                            contentType = "text/html; charset=utf-8";
+                        }
+                        this.savePage(item.pageID, content, contentType);
 
                         // if it is text/html then extract links
-                        if(response.headers.get('Content-Type').substr(0, 9) == "text/html") {
+                        if(contentType.substr(0, 9) == "text/html") {
                             //change status
                             item.status = 50;
                             //now extract all available links
@@ -187,6 +194,22 @@ class Project {
     }
 }
 
+
+function getRedirectPage(url) {
+    return new Blob([`
+<html>
+<body>
+    <h1 id="hide">Click <a id="link" href="${url}">Here</a></h1><h1 id="show" style="display:none;">Wait a second ...</h1>
+</body>
+<script type="text/javascript">
+    (()=>{
+        setTimeout(()=>{document.getElementById("link").click();}, 1000);
+        document.getElementById("hide").style.display = "none";
+        document.getElementById("show").style.display = "initial";
+    })();
+</script>
+</html>`]);
+}
 /****** Regular Expression functions ******/
 
 let regexps = [
