@@ -287,14 +287,14 @@ function getFileName(url, contentType) {
 
     // Now remove prohbited characters
     encodes = {
-        ":"  : "%3A",
-        "<"  : "%3C",
-        ">"  : "%3E",
-        "\"" : "%22",
-        "\\" : "%5C",
-        "|"  : "%7C",
-        "?"  : "%3F",
-        "*"  : "%2A"
+        ":"  : "_3A",
+        "<"  : "_3C",
+        ">"  : "_3E",
+        "\"" : "_22",
+        "\\" : "_5C",
+        "|"  : "_7C",
+        "?"  : "_3F",
+        "*"  : "_2A"
     };
     path = path.replaceAll(encodes);
 
