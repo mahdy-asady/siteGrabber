@@ -53,7 +53,8 @@ function updatePages(msg) {
 
 function updateProjectStatus(msg) {
     if(activeProject == msg.pid) {
-        $("#links-count").html(msg.data.savedPages + "/" + msg.data.allPages);
+        let percent = (msg.data.savedPages/msg.data.allPages*100).toFixed(2);
+        $("#links-count").html(msg.data.savedPages.toLocaleString('en') + "/" + msg.data.allPages.toLocaleString('en') + " (" + percent + "%)");
         $("#dl-bytes").html(msg.data.savedBytes);
     }
 }
