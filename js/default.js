@@ -46,7 +46,6 @@ function updatePages(msg) {
                 <td>${status}</td>
                 <td>${item.path}</td>
                 <td><div class="w3-light-grey"><div class="w3-red w3-center w3-text-black" style="width:${item.status}%">${item.status}%</div></div></td>
-                <td>skip &nbsp Pause</td>
                 </tr>`);
         });
     }
