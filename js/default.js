@@ -159,9 +159,8 @@ function updateExportStatus(msg) {
     $("#wExport").css("display", "block");
     $("#exportMessage").text(msg.message);
     $("#exportCurrentFile").text(msg.currentFile);
-    let percent = Math.round(msg.status) + "%";
-    $("#exportProgressBar").text(percent);
-    $("#exportProgressBar").css("width", percent);
+    $("#exportProgressBar").text(Math.round(msg.status) + "%");
+    $("#exportProgressBar").css("width", msg.status.toFixed(2)+"%");
 }
 
 function saveFile(msg) {
