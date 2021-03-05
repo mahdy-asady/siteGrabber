@@ -87,7 +87,7 @@ class Project {
                         resolve();
                     });
                 } else {
-                    this.savePage(item.pageID, "", "");
+                    this.savePage(item.pageID, new Blob([""]), "");
                     reject();
                 }
             });

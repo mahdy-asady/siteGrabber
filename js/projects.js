@@ -29,6 +29,9 @@ function initConnection(newConnection) {
             case "toggleActivate":
                 toggleActivate(msg.pid);
                 break;
+            case "status":
+                sendProjectStatus(msg.pid);
+                break;
             case "Export":
                 exportProject(msg.pid);
                 break;
@@ -119,6 +122,39 @@ function toggleActivate(pid) {
     });
 }
 
+
+function sendProjectStatus(pid) {
+    let index = db.transaction("Pages").objectStore("Pages").index("pid");
+    let allPages = index.count(pid);
+    allPages.onsuccess = ()=>{
+        var savedPages = 0, savedBytes = 0;
+
+        var range = IDBKeyRange.bound([pid, 1],[pid, Date.now()]);
+        let Pages = db.transaction("Pages").objectStore("Pages").index("pageDated");
+        var rq = Pages.openCursor(range);
+
+        rq.onsuccess = ()=>{
+            let cursor = rq.result;
+            if(cursor != null) {
+                savedPages++;
+                savedBytes += cursor.value.content.size;
+                cursor.continue();
+            }
+            else {
+                let data = {
+                    allPages    : allPages.result,
+                    savedPages  : savedPages,
+                    savedBytes  : formatBytes(savedBytes)
+                }
+                sendMessage("siteGrabberMain", {
+                    type  : "Status",
+                    pid   : pid,
+                    data  : data
+                });
+            }
+        }
+    }
+}
 
 function listProjects() {
     let rpt = [];
@@ -311,4 +347,18 @@ function createIndexPage(path) {
 <body>
 <h1><a href="${path}">Start here</a></h1>
 </body></html>`;
+}
+
+
+
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }

@@ -8,6 +8,7 @@ BGConnection.onMessage.addListener(updateWindow);
 
 function doGetList() {
     BGConnection.postMessage({type:"list"});
+    BGConnection.postMessage({type:"status", pid:activeProject});
 }doGetList();
 
 setInterval(()=>{doGetList()}, 500);
@@ -17,6 +18,9 @@ function updateWindow(msg) {
     switch (msg.type) {
         case "Pages":
             updatePages(msg);
+            break;
+        case "Status":
+            updateProjectStatus(msg);
             break;
         case "Projects":
             updateProjects(msg);
@@ -48,6 +52,12 @@ function updatePages(msg) {
     }
 }
 
+function updateProjectStatus(msg) {
+    if(activeProject == msg.pid) {
+        $("#links-count").html(msg.data.savedPages + "/" + msg.data.allPages);
+        $("#dl-bytes").html(msg.data.savedBytes);
+    }
+}
 
 function updateProjects(msg) {
     $("#projects").empty();
