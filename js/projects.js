@@ -218,26 +218,26 @@ function exportProject(activeProject){
                         //ok now replace links...
                         content = await content.text();
                         content = replaceLinks(content, (tag, g1, href) =>{
-                            //try {
+                            try {
                                 url = new URL(href, page.path);
-                                let hash = url.hash;
-                                url.hash = "";  //remove hash part of url
-                                let txtUrl = url.href;
-                                //ok we have link address. first wa have to ensure that we already downloaded this link.
-                                //if so then just get header content and get file address of it
-                                //if not, then just return link address
-                                if(allPages[txtUrl] && allPages[txtUrl].time > 0) {
-                                    //txtUrl = getFileName(txtUrl, allPages[txtUrl].header)
-                                    txtUrl = allPages[txtUrl].filePath;
-                                    txtUrl = getRelativePath(txtUrl, path);
-                                }
+                            } catch (e) {
+                                return tag;
+                            }
 
-                                //Add hash if there is
-                                txtUrl = txtUrl + hash;
-                                return tag.replace(href, txtUrl);
-                            //} catch (e) {
-                            //    return tag;
-                            //}
+                            let hash = url.hash;
+                            url.hash = "";  //remove hash part of url
+                            let txtUrl = url.href;
+                            //ok we have link address. first wa have to ensure that we already downloaded this link.
+                            //if so then just get header content and get file address of it
+                            //if not, then just return link address
+                            if(allPages[txtUrl] && allPages[txtUrl].time > 0) {
+                                //txtUrl = getFileName(txtUrl, allPages[txtUrl].header)
+                                txtUrl = allPages[txtUrl].filePath;
+                                txtUrl = getRelativePath(txtUrl, path);
+                            }
+                            //Add hash if there is
+                            txtUrl = txtUrl + hash;
+                            return tag.replace(href, txtUrl);
                         });
                     }
                     //adding files to zip
