@@ -188,61 +188,55 @@ function exportProject(activeProject){
         var data = index.getAll(IDBKeyRange.only(activeProject));
         data.onsuccess = async function(event) {
             var allPages = {}
-            var count = 0;
             data.result.forEach(page=>{
-                allPages[page.path] = page;
-                count++;
+                if(page.time && (page.content.size>0)) {//just save files that has been scanned at last 1.
+                    allPages[page.path] = page;
+                }
             });
-
+            let pageCount = Object.keys(allPages).length;
             var i=0;
             for(p in allPages) {
-
                 sendMessage("siteGrabberMain", {
                     type:           "ExportStatus",
                     message:        "Manipulating web pages...",
-                    status:         (++i/count)*100/2,
+                    status:         (++i/pageCount)*100/2,
                     currentFile:    p
                 });
 
                 page = allPages[p];
-                if(page.time && (page.content.size>0)) {//just save files that has been scanned at last 1.
-
-                    let header = (typeof page.header === 'undefined')? "" : page.header;
-                    let path = getFileName(page.path, header);
-                    if(i == 1) {//first link. we should create a root index that links to it
-                        root.file("index.htm", createIndexPage(path));
-                    }
-                    var content = page.content;
-
-                    if(header.left(9) == "text/html") {
-                        //ok now replace links...
-                        content = await content.text();
-                        content = replaceLinks(content, (tag, g1, href) =>{
-                            try {
-                                url = new URL(href, page.path);
-                            } catch (e) {
-                                return tag;
-                            }
-
-                            let hash = url.hash;
-                            url.hash = "";  //remove hash part of url
-                            let txtUrl = url.href;
-                            //ok we have link address. first wa have to ensure that we already downloaded this link.
-                            //if so then just get header content and get file address of it
-                            //if not, then just return link address
-                            if(allPages[txtUrl] && allPages[txtUrl].time > 0) {
-                                //txtUrl = getFileName(txtUrl, allPages[txtUrl].header)
-                                txtUrl = allPages[txtUrl].filePath;
-                                txtUrl = getRelativePath(txtUrl, path);
-                            }
-                            //Add hash if there is
-                            txtUrl = txtUrl + hash;
-                            return tag.replace(href, txtUrl);
-                        });
-                    }
-                    //adding files to zip
-                    root.file(path, content, {createFolders:true});
+                let header = (typeof page.header === 'undefined')? "" : page.header;
+                if(i == 1) {//first link. we should create a root index that links to it
+                    root.file("index.htm", createIndexPage(page.filePath));
                 }
+                var content = page.content;
+
+                if(header.left(9) == "text/html") {
+                    //ok now replace links...
+                    content = await content.text();
+                    content = replaceLinks(content, (tag, g1, href) =>{
+                        try {
+                            url = new URL(href, page.path);
+                        } catch (e) {
+                            return tag;
+                        }
+
+                        let hash = url.hash;
+                        url.hash = "";  //remove hash part of url
+                        let txtUrl = url.href;
+                        //ok we have link address. first wa have to ensure that we already downloaded this link.
+                        //if so then just get header content and get file address of it
+                        //if not, then just return link address
+                        if(allPages[txtUrl] && allPages[txtUrl].time > 0) {
+                            txtUrl = allPages[txtUrl].filePath;
+                            txtUrl = getRelativePath(txtUrl, page.filePath);
+                        }
+                        //Add hash if there is
+                        txtUrl = txtUrl + hash;
+                        return tag.replace(href, txtUrl);
+                    });
+                }
+                //adding files to zip
+                root.file(page.filePath, content, {createFolders:true});
             }
             //saving file
             zip.generateAsync({
