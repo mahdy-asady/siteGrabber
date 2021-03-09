@@ -60,19 +60,37 @@ function updateProjectStatus(msg) {
 }
 
 function updateProjects(msg) {
-    $("#projects").empty();
-    msg.projects.forEach((item, i) => {
-        $("#projects").append(`<li data-pid="${item.pid}" data-isActive="${item.isActive}" class="w3-padding-16 w3-hover-light-grey"><img src="/style/web-32.png" class="w3-padding-small">${item.name}${(!item.isActive)? "(Paused)":""}</li>`);
+    //the order of projects should not change between every request, so we need to check rows one by one. anything that does not match should be removed! and at end we should add remaining items!
+    // in this situation even if first item of a list of 100 project get deleted we just delete all list once and it will not need to do this every execution of list update
+    let listIndex = 0;
+    let data = msg.projects;
+    //we see data as a stack. if first item is in projects list then shift it from stack
+    while(listIndex < $("#projects li").length) {
+        if($(`#projects li:nth-child(${listIndex+1})`).data("pid") != data[0].pid) {
+            $(`#projects:nth-child(${listIndex+1})`).remove();
+        } else {
+            //update data first
+            $(`#projects li:nth-child(${listIndex+1})`).data("isActive", data[0].isActive);
+            $(`#projects li:nth-child(${listIndex+1})`).data("name", data[0].name);
+
+            data.shift();
+            listIndex++;
+        }
+    }
+
+    data.forEach((item, i) => {
+        $("#projects").append(`<li class="w3-padding-16 w3-hover-light-grey"></li>`);
+        $("#projects li:last-child").data("pid", item.pid);
+        $("#projects li:last-child").data("isActive", item.isActive);
+        $("#projects li:last-child").data("name", item.name);
     });
 
-    if(msg.projects.length == 0)
-        updateProjects.hasExecuted = 0;
-    else if(!updateProjects.hasExecuted) {
-        $(".project-list ul li:first-child").click();
-        updateProjects.hasExecuted = 1;
-    }
-    else {
-        highlightActiveProject();
+
+    if($("#projects li").length > 0) {
+        if(activeProject == 0)
+            $("#projects li:first-child").click();
+        else
+            highlightActiveProject();
     }
 }
 
@@ -84,15 +102,19 @@ function highlightActiveProject() {
     $(".project-list ul li").addClass("w3-hover-light-grey");
 
 
-    $(".project-list ul li").each(function(){
-        if($(this).data().pid == activeProject || activeProject == 0) {
-            if(activeProject == 0) activeProject = $(this).data().pid;
+    $("#projects li").each(function(){
+        //if activeProject not set then the first item will be active
+        if(activeProject == 0) activeProject = $(this).data("pid");
 
+        //set current row text
+        $(this).html('<img src="/style/web-32.png" class="w3-padding-small">' + $(this).data("name") + (!$(this).data("isActive")? " (Paused)":""));
+
+        if($(this).data("pid") == activeProject) {
             $(this).addClass("w3-green w3-hover-light-green");
             $(this).removeClass("w3-hover-light-grey");
 
             //change pause/resume button text
-            if($(this).data().isactive) {
+            if($(this).data().isActive) {
                 $("#projectPause").text("Pause Project");
             } else {
                 $("#projectPause").text("Resume Project");
@@ -101,7 +123,7 @@ function highlightActiveProject() {
     });
 };
 
-$(".project-list ul").on("click", "li", function(){
+$("#projects").on("click", "li", function(){
     if(activeProject != $(this).data().pid) {
         //set active project id
         activeProject = $(this).data().pid;
