@@ -24,13 +24,13 @@
         "js/windowManager.js",
         "js/db.js",
         "js/clsProject.js",
-        "js/projects.js"
+        "js/projectManager.js"
      ]
   },
 
   "browser_action": {
     "browser_style": true,
-    "default_popup": "windows/new.html",
+    "default_popup": "windows/new_edit.html",
     "default_icon": "style/grabber.svg",
     "default_title": "SiteGrabber"
   }
