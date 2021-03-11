@@ -66,8 +66,8 @@ function updateProjects(msg) {
     let data = msg.projects;
     //we see data as a stack. if first item is in projects list then shift it from stack
     while(listIndex < $("#projects li").length) {
-        if($(`#projects li:nth-child(${listIndex+1})`).data("pid") != data[0].pid) {
-            $(`#projects:nth-child(${listIndex+1})`).remove();
+        if(data.length == 0 || $(`#projects li:nth-child(${listIndex+1})`).data("pid") != data[0].pid) {
+            $(`#projects li:nth-child(${listIndex+1})`).remove();
         } else {
             //update data first
             $(`#projects li:nth-child(${listIndex+1})`).data("isActive", data[0].isActive);
