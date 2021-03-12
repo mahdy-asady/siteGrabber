@@ -1,7 +1,7 @@
 class Project {
-    info;
-    intervalID;
-    enabled = true;
+    //info;
+    //intervalID;
+    //enabled = true;
     /*
         jobs array
         [
@@ -12,9 +12,12 @@ class Project {
             }
         ]
     */
-    jobs = [];
-    constructor(info) {
-        this.info = info;
+    //jobs = [];
+    constructor(inf) {
+        this.enabled = true;
+        this.jobs=[];
+        
+        this.info = inf;
         this.seeder();
         this.intervalID = setInterval(()=>{
             sendMessage("siteGrabberMain", {
