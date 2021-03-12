@@ -7,8 +7,8 @@ var BGConnection = browser.runtime.connect({name:"siteGrabberMain"});
 BGConnection.onMessage.addListener(updateWindow);
 
 function doGetList() {
-    BGConnection.postMessage({type:"list"});
-    BGConnection.postMessage({type:"status", pid:activeProject});
+    BGConnection.postMessage({type:"getProjectsList"});
+    BGConnection.postMessage({type:"getProjectStatus", pid:activeProject});
 }doGetList();
 
 setInterval(()=>{doGetList()}, 500);
@@ -19,19 +19,19 @@ function updateWindow(msg) {
         case "Pages":
             updatePages(msg);
             break;
-        case "Status":
+        case "projectStatus":
             updateProjectStatus(msg);
             break;
-        case "Projects":
+        case "projectsList":
             updateProjects(msg);
             break;
         case "ProjectInfo":
             showEditWindow(msg.data);
             break;
-        case "ExportStatus":
+        case "exportStatus":
             updateExportStatus(msg);
             break;
-        case "Export":
+        case "exportFile":
             saveFile(msg);
             break;
     }
@@ -194,7 +194,7 @@ $("#projectPause").click(function() {
 $("#projectDelete").click(function() {
     if((activeProject != 0) && confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
         BGConnection.postMessage({
-            type:"Delete",
+            type:"deleteProject",
             pid: activeProject
         });
         activeProject = 0;
@@ -216,7 +216,7 @@ $("#projectExport").click(function(){
 
 //    $("#wExport").css("display", "block");
     BGConnection.postMessage({
-        type:"Export",
+        type:"exportProject",
         pid: activeProject
     });
 });

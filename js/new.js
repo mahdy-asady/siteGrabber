@@ -87,7 +87,7 @@ $(function() {
         });
 
         BGConnection.postMessage({
-            type: "new",
+            type: "addProject",
             data: data
         });
     });
