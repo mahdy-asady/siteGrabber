@@ -19,9 +19,6 @@ class Project {
 
         this.info = inf;
         this.seeder();
-        this.intervalID = setInterval(()=>{
-
-        }, 200);
     }
 
     sendActiveJobs() {
@@ -35,7 +32,6 @@ class Project {
 
     destructor() {
         this.enabled = false;
-        clearInterval(this.intervalID);
     }
 
     setActive(isActive) {
@@ -131,7 +127,7 @@ class Project {
                 var rq = Pages.index("pageDated").openCursor(range);
 
                 rq.onsuccess = (event) => {
-                    let cursor = event.target.result;
+                    let cursor = rq.result;
                     if(cursor == null) {
                         //console.log("No other url on pid(" + this.pid + ") is available!");
                         doWait = true;

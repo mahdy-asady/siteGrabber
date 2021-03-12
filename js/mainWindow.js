@@ -8,7 +8,7 @@ BGConnection.onMessage.addListener(updateWindow);
 
 function doGetList() {
     BGConnection.postMessage({type:"getProjectsList"});
-    BGConnection.postMessage({type:"getProjectStatus", pid:activeProject});
+    if(activeProject) BGConnection.postMessage({type:"getProjectStatus", pid:activeProject});
 }doGetList();
 
 setInterval(()=>{doGetList()}, 500);
@@ -20,7 +20,7 @@ setInterval(()=>{
 function updateWindow(msg) {
     switch (msg.type) {
         case "projectActiveJobs":
-            updatePages(msg);
+            updateActiveJobs(msg);
             break;
         case "projectStatus":
             updateProjectStatus(msg);
@@ -41,21 +41,22 @@ function updateWindow(msg) {
 
 }
 
-function updatePages(msg) {
-    if(!updatePages.lastMessage) updatePages.lastMessage = 0;//ignore delayed messages
-    if(activeProject == msg.pid && msg.time > updatePages.lastMessage) {
-        updatePages.lastMessage = msg.time;
+function updateActiveJobs(msg) {
+    if(!updateActiveJobs.lastMessage) updateActiveJobs.lastMessage = 0;//ignore delayed messages
+    if(activeProject == msg.pid && msg.time > updateActiveJobs.lastMessage) {
+        updateActiveJobs.lastMessage = msg.time;
         $("#activePages").find("tr:gt(0)").remove();
-
+        var fragment = "";
         msg.jobs.forEach((item, i) => {
             let status = (item.status<40)? "Downloading":(item.status<50)? "Saving":(item.status<100)? "Get links":"Complete";
 
-            $("#activePages").append(`<tr>
+            fragment += `<tr>
                 <td>${status}</td>
                 <td>${item.path}</td>
                 <td><div class="w3-light-grey"><div class="w3-red w3-center w3-text-black" style="width:${item.status}%">${item.status}%</div></div></td>
-                </tr>`);
+                </tr>`;
         });
+        $("#activePages").append(fragment);
     }
 }
 
