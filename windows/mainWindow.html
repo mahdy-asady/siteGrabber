@@ -56,7 +56,7 @@
    </div>
 
 </div>
-
+<!-- ******************** Export window ******************** -->
 <div id="wExport" class="w3-modal">
     <div class="w3-modal-content">
         <div class="w3-container" style="padding-bottom:10px;">
@@ -74,6 +74,49 @@
             </div>
         </div>
     </div>
+</div>
+<!-- ******************** Edit Project window ******************** -->
+<div id="wEdit" class="w3-modal">
+    <div class="w3-modal-content" style="width:600px;">
+        <div class="w3-container" style="padding-bottom:10px;">
+            <span id="btnEditClose" class="w3-button w3-display-topright" style="">&times;</span>
+            <p class="w3-border-bottom">Edit Project</p>
+
+
+            <div><label for="txtName" class="field">Project name:</label> <input type="text" id="txtName" /></div>
+            <div><label for="lstDomains">Allowed domains:</label></div>
+            <div style="height:120px;">
+                <select id="lstDomains" size="5" style="width:500px; float:left;"></select>
+                <span style="float:left">
+                    <button id="btnAddDomain" class="w3-tiny" style="width:5px; padding:0; margin:0">+</button><br />
+                    <button id="btnDelDomain" class="w3-tiny" style="width:5px; padding:0; margin:0">-</button>
+                </span>
+            </div>
+            <div>
+                <label for="txtConcurrentLimit" class="field2">Concurrent download limit:</label> <input type="number" id="txtConcurrentLimit" min="1" max="10" value="4">
+            </div>
+            <div>
+                <label for="txtIndexAge" class="field2">Maximum Indexing life time:</label> <input type="number" id="txtIndexAge" min="1" value="30"> Days
+            </div>
+
+
+            <div class="w3-padding-16">
+                <span style="float:right;"><button id="btnEditCancel">Cancel</button> <button id="btnEditSave">Save</button></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="wAddDomain" class="w3-modal">
+  <div class="w3-modal-content">
+    <div class="w3-container">
+      <p>Add domain to white list:</p>
+      <div><label for="txtDomain" class="field">Domain name:</label> <input type="text" id="txtDomain" value="https://" /></div>
+      <div>
+          <span style="float:right"><button id="btnAddDomainCancel">Cancel</button>&nbsp<button id="btnAddDomainSave">&nbsp Add &nbsp</button></span>
+      </div>
+    </div>
+  </div>
 </div>
 
 </body>

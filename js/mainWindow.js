@@ -25,6 +25,9 @@ function updateWindow(msg) {
         case "Projects":
             updateProjects(msg);
             break;
+        case "ProjectInfo":
+            showEditWindow(msg.data);
+            break;
         case "ExportStatus":
             updateExportStatus(msg);
             break;
@@ -132,6 +135,53 @@ $("#projects").on("click", "li", function(){
         //highlight the left menu item
         highlightActiveProject();
     }
+});
+
+$("#projectEdit").click(function() {
+    BGConnection.postMessage({
+        type : "getProjectInfo",
+        pid  :  activeProject
+    });
+});
+
+function showEditWindow(info) {
+    if(info.pid != activeProject) return;
+    $("#txtName").val(info.name);
+    $("#lstDomains").empty();
+    $.each(info.config.whiteList, (index, item) => {
+        $("#lstDomains").append(new Option(item, item));
+    });
+    $("#txtConcurrentLimit").val(info.config.downloadLimit);
+    $("#txtIndexAge").val(info.config.lifeTime);
+    $("#wEdit").css("display", "block");
+}
+
+$("#btnEditClose").click(function() {
+    $("#wEdit").css("display", "none");
+});
+$("#btnEditCancel").click(function() {
+    $("#wEdit").css("display", "none");
+});
+
+$("#btnEditSave").click(function() {
+    var data = {
+        pid :               activeProject,
+        name:               $("#txtName").val(),
+        config: {
+            whiteList:      [],
+            downloadLimit:  $("#txtConcurrentLimit").val(),
+            lifeTime:       $("#txtIndexAge").val()
+        }
+    };
+    $("#lstDomains > option").each(function() {
+        data.config.whiteList.push(this.value);
+    });
+
+    BGConnection.postMessage({
+        type: "editProject",
+        data: data
+    });
+    $("#wEdit").css("display", "none");
 });
 
 $("#projectPause").click(function() {

@@ -23,12 +23,18 @@ function initConnection(newConnection) {
             case "new":
                 newProject(msg.data);
                 break;
+            case "editProject":
+                editProject(msg.data);
+                break;
             case "Delete":
                 deleteProject(msg.pid);
                 break;
             case "toggleActivate":
                 toggleActivate(msg.pid);
                 break;
+            case "getProjectInfo":
+                getProjectInfo(msg.pid);
+                break
             case "status":
                 sendProjectStatus(msg.pid);
                 break;
@@ -88,6 +94,18 @@ function newProject(data) {
 
 }
 
+function editProject(data) {
+    Projects[data.pid].setConfig(data.config);
+    //put data
+    let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
+    dbProjects.put({
+        pid     :   data.pid,
+        isActive:   Projects[data.pid].isActive,
+        name    :   data.name,
+        config  :   data.config
+    });
+}
+
 function deleteProject(pid) {
     //stop project
     Projects[pid].destructor();
@@ -122,6 +140,16 @@ function toggleActivate(pid) {
     });
 }
 
+
+function getProjectInfo(pid) {
+    var request = db.transaction("Projects").objectStore("Projects").get(pid);
+    request.onsuccess = function(event) {
+        sendMessage("siteGrabberMain", {
+            type : "ProjectInfo",
+            data : request.result
+        });
+    }
+}
 
 function sendProjectStatus(pid) {
     let index = db.transaction("Pages").objectStore("Pages").index("pid");
