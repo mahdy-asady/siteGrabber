@@ -77,6 +77,7 @@ function newProject(data) {
     var request = objectStore.add(data);
     request.onsuccess = function(event) {
         let pid = event.target.result;
+        data.pid = pid;
         //event.target.result
         let Page ={
             pid: pid,
