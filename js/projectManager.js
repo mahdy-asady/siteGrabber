@@ -38,6 +38,9 @@ function initConnection(newConnection) {
             case "getProjectStatus":
                 sendProjectStatus(msg.pid);
                 break;
+            case "getProjectActiveJobs":
+                getProjectActiveJobs(msg.pid);
+                break;
             case "exportProject":
                 exportProject(msg.pid);
                 break;
@@ -172,6 +175,10 @@ function sendProjectStatus(pid) {
             }
         }
     }
+}
+
+function getProjectActiveJobs(pid) {
+    if(Projects[pid]) Projects[pid].sendActiveJobs();
 }
 
 function listProjects() {

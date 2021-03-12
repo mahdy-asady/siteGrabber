@@ -12,11 +12,14 @@ function doGetList() {
 }doGetList();
 
 setInterval(()=>{doGetList()}, 500);
-
+setInterval(()=>{
+    if(activeProject)
+        BGConnection.postMessage({type:"getProjectActiveJobs", pid:activeProject});
+},200);
 
 function updateWindow(msg) {
     switch (msg.type) {
-        case "Pages":
+        case "projectActiveJobs":
             updatePages(msg);
             break;
         case "projectStatus":
@@ -39,7 +42,9 @@ function updateWindow(msg) {
 }
 
 function updatePages(msg) {
-    if(activeProject == msg.pid) {
+    if(!updatePages.lastMessage) updatePages.lastMessage = 0;//ignore delayed messages
+    if(activeProject == msg.pid && msg.time > updatePages.lastMessage) {
+        updatePages.lastMessage = msg.time;
         $("#activePages").find("tr:gt(0)").remove();
 
         msg.jobs.forEach((item, i) => {

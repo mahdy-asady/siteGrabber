@@ -16,16 +16,21 @@ class Project {
     constructor(inf) {
         this.enabled = true;
         this.jobs=[];
-        
+
         this.info = inf;
         this.seeder();
         this.intervalID = setInterval(()=>{
-            sendMessage("siteGrabberMain", {
-                type:"Pages",
-                pid:this.info.pid,
-                jobs: this.jobs
-            });
+
         }, 200);
+    }
+
+    sendActiveJobs() {
+        sendMessage("siteGrabberMain", {
+            type : "projectActiveJobs",
+            time : Date.now(),
+            pid  : this.info.pid,
+            jobs : this.jobs
+        });
     }
 
     destructor() {
