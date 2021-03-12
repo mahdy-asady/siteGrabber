@@ -59,7 +59,7 @@ function initProjects() {
     dbProjects.getAll().onsuccess = function(event) {
         event.target.result.forEach(item => {
             //create project
-            Projects[item.pid] = new Project(item.pid, item.name, item.isActive, item.config);
+            Projects[item.pid] = new Project(item);
         });
     }
 }
@@ -85,7 +85,7 @@ function newProject(data) {
         var Pages = pgTransaction.objectStore("Pages");
         var PagesRequest = Pages.add(Page);
         PagesRequest.onsuccess = function(event) {
-            Projects[pid] = new Project(pid, data.name, data.isActive, data.config);
+            Projects[pid] = new Project(data);
             sendMessage("siteGrabberNew", {
                 type:"ok"
             });
@@ -95,15 +95,11 @@ function newProject(data) {
 }
 
 function editProject(data) {
-    Projects[data.pid].setConfig(data.config);
+    data.isActive = Projects[data.pid].info.isActive;
+    Projects[data.pid].setInfo(data);
     //put data
     let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
-    dbProjects.put({
-        pid     :   data.pid,
-        isActive:   Projects[data.pid].isActive,
-        name    :   data.name,
-        config  :   data.config
-    });
+    dbProjects.put(Projects[data.pid].info);
 }
 
 function deleteProject(pid) {
@@ -128,16 +124,10 @@ function deleteProject(pid) {
 //function cleanup(){}
 
 function toggleActivate(pid) {
-    Projects[pid].setActive(!Projects[pid].isActive);
+    Projects[pid].setActive(!Projects[pid].info.isActive);
 
     let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
-    dbProjects.put({
-        pid:    pid,
-        isActive: Projects[pid].isActive,
-        name:   Projects[pid].name,
-        config: Projects[pid].config,
-
-    });
+    dbProjects.put(Projects[pid].info);
 }
 
 
@@ -188,9 +178,9 @@ function listProjects() {
     let rpt = [];
     Object.keys(Projects).forEach(item => {
         rpt.push({
-            pid: Projects[item].pid,
-            isActive: Projects[item].isActive,
-            name: Projects[item].name
+            pid: Projects[item].info.pid,
+            isActive: Projects[item].info.isActive,
+            name: Projects[item].info.name
         });
     });
 

@@ -1,8 +1,5 @@
 class Project {
-    pid;
-    name;
-    isActive = false;
-    config;
+    info;
     intervalID;
     enabled = true;
     /*
@@ -16,16 +13,13 @@ class Project {
         ]
     */
     jobs = [];
-    constructor(pid, name, isActive, config) {
-        this.pid = pid;
-        this.name = name;
-        this.isActive = isActive
-        this.config = config;
+    constructor(info) {
+        this.info = info;
         this.seeder();
         this.intervalID = setInterval(()=>{
             sendMessage("siteGrabberMain", {
                 type:"Pages",
-                pid:this.pid,
+                pid:this.info.pid,
                 jobs: this.jobs
             });
         }, 200);
@@ -37,11 +31,11 @@ class Project {
     }
 
     setActive(isActive) {
-        this.isActive = isActive;
+        this.info.isActive = isActive;
     }
 
-    setConfig(conf) {
-        this.config = conf;
+    setInfo(info) {
+        this.info = info;
     }
 
     /*
@@ -118,13 +112,13 @@ class Project {
     async seeder() {
         while(this.enabled) {
             let doWait = false;
-            if(!this.isActive || this.jobs.length >= this.config.downloadLimit) {
+            if(!this.info.isActive || this.jobs.length >= this.info.config.downloadLimit) {
                 doWait = true;
             } else {
                 //get pages where are for this project and are older than the age specified for update(lifetime)
                 let Pages = db.transaction("Pages", "readonly").objectStore("Pages");
-                let lifeTime = Date.now() - this.config.lifeTime *24*60*60*1000;
-                var range = IDBKeyRange.bound([this.pid, 0],[this.pid, lifeTime]);
+                let lifeTime = Date.now() - this.info.config.lifeTime *24*60*60*1000;
+                var range = IDBKeyRange.bound([this.info.pid, 0],[this.info.pid, lifeTime]);
                 let cursorIsOpen = true; //emulating synchronize function
                 var rq = Pages.index("pageDated").openCursor(range);
 
@@ -148,7 +142,7 @@ class Project {
                     this.addJob(node.id, node.path);
 
                     //ok let do some speedy. if we have some space in jobs, use current db connection and fill them...
-                    if(this.jobs.length < this.config.downloadLimit) {
+                    if(this.jobs.length < this.info.config.downloadLimit) {
                         cursor.continue();
                         return;
                     }
@@ -169,9 +163,9 @@ class Project {
             let url = new URL(currentURL, baseURL);
             url.hash = "";  //remove hash part of url
             let txtUrl = url.href
-            if(this.config.whiteList.indexOf(url.host) >= 0) {
+            if(this.info.config.whiteList.indexOf(url.host) >= 0) {
                 let newUrl = {
-                    pid: this.pid,
+                    pid: this.info.pid,
                     time: 0,
                     path: txtUrl,
                     referrer: pageID
