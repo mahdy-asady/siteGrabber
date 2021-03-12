@@ -201,8 +201,8 @@ function listProjects() {
 }
 
 
-function exportProject(activeProject){
-    var request = db.transaction("Projects").objectStore("Projects").get(activeProject);
+function exportProject(pid){
+    var request = db.transaction("Projects").objectStore("Projects").get(pid);
 
     request.onsuccess = function(event) {
         // Do something with the request.result!
@@ -213,7 +213,7 @@ function exportProject(activeProject){
         let zip = new JSZip();
         //create a root folder based on project name and store all files in it
         let root = zip.folder(pName);
-        var data = index.getAll(IDBKeyRange.only(activeProject));
+        var data = index.getAll(IDBKeyRange.only(pid));
         data.onsuccess = async function(event) {
             var allPages = {}
             data.result.forEach(page=>{
