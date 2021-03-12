@@ -103,7 +103,7 @@ class Project {
     }
 
     async deleteJob(pageID){
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 200));
         let i = 0;
         for(i = 0; i<this.jobs.length; i++) {
             if(this.jobs[i].pageID == pageID) {
@@ -157,7 +157,7 @@ class Project {
             }
 
             if(doWait) {
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 50));
             }
         }
     }
