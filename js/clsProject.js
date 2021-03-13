@@ -1,7 +1,6 @@
+"use strict";
+
 class Project {
-    //info;
-    //intervalID;
-    //enabled = true;
     /*
         jobs array
         [
@@ -14,11 +13,10 @@ class Project {
     */
     //jobs = [];
     constructor(inf) {
-        this.enabled = true;
         this.jobs=[];
 
         this.info = inf;
-        this.seeder();
+        if(this.info.isActive) this.seeder();
     }
 
     sendActiveJobs() {
@@ -31,11 +29,12 @@ class Project {
     }
 
     destructor() {
-        this.enabled = false;
+        this.info = null;
     }
 
     setActive(isActive) {
         this.info.isActive = isActive;
+        if(isActive) this.seeder();
     }
 
     setInfo(info) {
@@ -114,23 +113,18 @@ class Project {
     }
 
     async seeder() {
-        while(this.enabled) {
-            let doWait = false;
-            if(!this.info.isActive || this.jobs.length >= this.info.config.downloadLimit) {
-                doWait = true;
-            } else {
+        while(this.info && this.info.isActive) {
+            if(this.jobs.length < this.info.config.downloadLimit) {
                 //get pages where are for this project and are older than the age specified for update(lifetime)
                 let Pages = db.transaction("Pages", "readonly").objectStore("Pages");
                 let lifeTime = Date.now() - this.info.config.lifeTime *24*60*60*1000;
                 var range = IDBKeyRange.bound([this.info.pid, 0],[this.info.pid, lifeTime]);
                 let cursorIsOpen = true; //emulating synchronize function
                 var rq = Pages.index("pageDated").openCursor(range);
-
                 rq.onsuccess = (event) => {
                     let cursor = rq.result;
                     if(cursor == null) {
                         //console.log("No other url on pid(" + this.pid + ") is available!");
-                        doWait = true;
                         cursorIsOpen = false;
                         return;
                     }
@@ -144,7 +138,6 @@ class Project {
                     }
                     doAnimate();
                     this.addJob(node.id, node.path);
-
                     //ok let do some speedy. if we have some space in jobs, use current db connection and fill them...
                     if(this.jobs.length < this.info.config.downloadLimit) {
                         cursor.continue();
@@ -152,12 +145,9 @@ class Project {
                     }
                     cursorIsOpen = false;
                 };
-
-                while(cursorIsOpen){await new Promise(r => setTimeout(r, 50));}
-            }
-
-            if(doWait) {
-                await new Promise(r => setTimeout(r, 50));
+                while(cursorIsOpen) {await new Promise(r => setTimeout(r, 0));}
+            } else {
+                await new Promise(r => setTimeout(r, 0));
             }
         }
     }
@@ -221,7 +211,7 @@ let regexps = [
 function getLinks(content) {
     var result = [];
     regexps.forEach((regexp) => {
-        matches = content.matchAll(regexp);
+        let matches = content.matchAll(regexp);
         for (const match of matches) {
             result.push(match[2]);
         }

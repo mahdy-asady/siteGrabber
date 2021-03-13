@@ -1,3 +1,5 @@
+"use strict";
+
 var animateStart;
 function doAnimate() {
     if(animateStart<(Date.now()-1000)) {

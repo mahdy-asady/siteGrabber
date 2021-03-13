@@ -1,3 +1,5 @@
+"use strict";
+
 //after connecting to database. every 3 seconds we will refresh projects
 initDB(initProjects);
 
@@ -221,7 +223,7 @@ function exportProject(pid){
             });
             let pageCount = Object.keys(allPages).length;
             var i=0;
-            for(p in allPages) {
+            for(var p in allPages) {
                 sendMessage("siteGrabberMain", {
                     type:           "exportStatus",
                     message:        "Manipulating web pages...",
@@ -229,7 +231,7 @@ function exportProject(pid){
                     currentFile:    p
                 });
 
-                page = allPages[p];
+                let page = allPages[p];
                 let header = (typeof page.header === 'undefined')? "" : page.header;
                 if(i == 1) {//first link. we should create a root index that links to it
                     root.file("index.htm", createIndexPage(page.filePath));
@@ -306,7 +308,7 @@ function getFileName(url, contentType) {
     }
 
     // Now remove prohbited characters
-    encodes = {
+    let encodes = {
         ":"  : "_3A",
         "<"  : "_3C",
         ">"  : "_3E",
