@@ -7,15 +7,21 @@ var db;
 
 function initiateDatabase() {
     return new Promise((resolve, reject) => {
-        if (!window.indexedDB) {
+        if (window.indexedDB) {
+            initiateIndexedDB(resolve, reject);
+        } else {
             reject("IndexedDB Not Supported by Browser!");
         }
-
-        let request = window.indexedDB.open("__DATA__", 1);
-        request.onerror = databaseErrorHandler(reject);
-        request.onupgradeneeded = databaseUpgradeHandler;
-        request.onsuccess = databaseSuccessHandler(resolve);
     });
+}
+
+//*************************************************************
+
+function initiateIndexedDB(resolve, reject) {
+    let request = window.indexedDB.open("__DATA__", 1);
+    request.onerror = databaseErrorHandler(reject);
+    request.onupgradeneeded = databaseUpgradeHandler;
+    request.onsuccess = databaseSuccessHandler(resolve);
 }
 
 //*************************************************************
