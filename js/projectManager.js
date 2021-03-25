@@ -1,7 +1,7 @@
 "use strict";
 
 //after connecting to database. every 3 seconds we will refresh projects
-initDB(initProjects);
+initiateDatabase().then(initProjects);
 
 //the key of Projects array is pid of the projects, then we could easyly access every project in this list by accessing Projects[pid]
 var Projects = {}
