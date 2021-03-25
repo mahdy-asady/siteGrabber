@@ -4,21 +4,32 @@
 
 const animationPeriod = 1000;
 let lastAnimationInvoke;
-function isAnimationTimeElapsed() {
-    return lastAnimationInvoke<(Date.now()-animationPeriod);
+
+
+setInterval(freezeIcon, animationPeriod);
+
+//*************************************************************
+
+function freezeIcon() {
+    if(isAnimationTimeElapsed())
+        setStaticIcon();
 }
+
+//*************************************************************
 
 function animateIcon() {
     if(isAnimationTimeElapsed())
         setAnimatedIcon();
     lastAnimationInvoke = Date.now();
 }
-function freezeIcon() {
-    if(isAnimationTimeElapsed())
-        setStaticIcon();
+
+//*************************************************************
+
+function isAnimationTimeElapsed() {
+    return lastAnimationInvoke<(Date.now()-animationPeriod);
 }
 
-setInterval(freezeIcon, animationPeriod);
+//*************************************************************
 
 function setAnimatedIcon() {
     browser.browserAction.setIcon({
@@ -28,6 +39,8 @@ function setAnimatedIcon() {
         }
     });
 }
+
+//*************************************************************
 
 function setStaticIcon() {
     browser.browserAction.setIcon({path:"style/grabber.svg"});
