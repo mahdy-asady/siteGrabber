@@ -3,7 +3,7 @@
 //  animateIcon()
 
 const animationPeriod = 1000;
-let lastAnimationInvoke;
+let lastAnimationInvoke = 0;
 
 
 setInterval(freezeIcon, animationPeriod);
