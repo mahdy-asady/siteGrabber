@@ -136,7 +136,7 @@ class Project {
                         cursor.continue();
                         return;
                     }
-                    doAnimate();
+                    animateIcon();
                     this.addJob(node.id, node.path);
                     //ok let do some speedy. if we have some space in jobs, use current db connection and fill them...
                     if(this.jobs.length < this.info.config.downloadLimit) {

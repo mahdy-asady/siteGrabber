@@ -21,7 +21,7 @@
   "background": {
     "scripts": [
         "js/ext/jszip.js",
-        "js/windowManager.js",
+        "js/iconAnimator.js",
         "js/db.js",
         "js/clsProject.js",
         "js/projectManager.js"
