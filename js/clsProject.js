@@ -14,32 +14,71 @@ class Project {
     //jobs = [];
     constructor(inf) {
         this.jobs=[];
+        this.configuration = inf;
 
-        this.info = inf;
-        if(this.info.isActive) this.seeder();
+        this.startSeederIfProjectIsActive();
     }
 
+    //*************************************************************************
+
+    // TODO: Setter and getter of configuration property
+
+    get pid() {
+        return this.configuration.pid;
+    }
+
+    //*************************************************************************
+
+    set isActive(status) {
+        //convert to boolean with !!
+        this.configuration.isActive = !!status;
+        this.startSeederIfProjectIsActive();
+    }
+
+    get isActive() {
+        return this.configuration.isActive;
+    }
+
+    toggleActive() {
+        this.isActive = !this.isActive;
+    }
+
+    //*************************************************************************
+
+    set name(name) {
+        this.configuration.name = name;
+    }
+
+    get name() {
+        return this.configuration.name;
+    }
+
+    //*************************************************************************
+
+    setConfig(info) {
+        this.configuration = info;
+    }
+
+    getConfig() {
+        return this.configuration;
+    }
+    //*************************************************************************
+
     sendActiveJobs() {
-        sendMessage("siteGrabberMain", {
-            type : "projectActiveJobs",
+        sendMessage("siteGrabberMain", "projectActiveJobs", {
             time : Date.now(),
-            pid  : this.info.pid,
+            pid  : this.pid,
             jobs : this.jobs
         });
     }
 
+    //*************************************************************************
+
     destructor() {
-        this.info = null;
+        this.configuration = null;
     }
 
-    setActive(isActive) {
-        this.info.isActive = isActive;
-        if(isActive) this.seeder();
-    }
-
-    setInfo(info) {
-        this.info = info;
-    }
+    //*************************************************************************
 
     /*
         1. get link Content
@@ -66,7 +105,7 @@ class Project {
                         this.savePage(item.pageID, content, contentType);
 
                         // if it is text/html then extract links
-                        if(contentType.substr(0, 9) == "text/html") {
+                        if(contentTypeIsHTML(contentType)) {
                             //change status
                             item.status = 50;
                             //now extract all available links
@@ -91,6 +130,8 @@ class Project {
         });
     }
 
+    //*************************************************************************
+
     addJob(pageID, path){
         let threadIndex = this.jobs.push({
             pageID : pageID,
@@ -100,6 +141,8 @@ class Project {
 
         this.worker(this.jobs[threadIndex]).finally(()=>{this.deleteJob(pageID)});
     }
+
+    //*************************************************************************
 
     async deleteJob(pageID){
         await new Promise(r => setTimeout(r, 200));
@@ -112,54 +155,74 @@ class Project {
         }
     }
 
+    //*************************************************************************
+
+    startSeederIfProjectIsActive() {
+        if(this.isActive) this.seeder();
+    }
+
+    //*************************************************************************
+
     async seeder() {
-        while(this.info && this.info.isActive) {
-            if(this.jobs.length < this.info.config.downloadLimit) {
-                //get pages where are for this project and are older than the age specified for update(lifetime)
-                let Pages = db.transaction("Pages", "readonly").objectStore("Pages");
-                let lifeTime = Date.now() - this.info.config.lifeTime *24*60*60*1000;
-                var range = IDBKeyRange.bound([this.info.pid, 0],[this.info.pid, lifeTime]);
-                let cursorIsOpen = true; //emulating synchronize function
-                var rq = Pages.index("pageDated").openCursor(range);
-                rq.onsuccess = (event) => {
-                    let cursor = rq.result;
-                    if(cursor == null) {
-                        //console.log("No other url on pid(" + this.pid + ") is available!");
-                        cursorIsOpen = false;
-                        return;
-                    }
-                    let node = cursor.value;
-                    //console.log(node);
-                    //first search in jobs if already fetching the url we will ignore this one
-                    if(this.jobs.some((item)=>{return item.pageID == node.id;})) {
-                        //console.log("url is found in list!");
-                        cursor.continue();
-                        return;
-                    }
-                    animateIcon();
-                    this.addJob(node.id, node.path);
-                    //ok let do some speedy. if we have some space in jobs, use current db connection and fill them...
-                    if(this.jobs.length < this.info.config.downloadLimit) {
-                        cursor.continue();
-                        return;
-                    }
-                    cursorIsOpen = false;
-                };
-                while(cursorIsOpen) {await new Promise(r => setTimeout(r, 0));}
+        while(this.configuration && this.isActive) {
+            if(this.jobs.length < this.configuration.config.downloadLimit) {
+                await this.fetchCandidatePages();
             } else {
                 await new Promise(r => setTimeout(r, 0));
             }
         }
     }
 
+    //*************************************************************************
+
+    fetchCandidatePages() {
+        return new Promise((resolve, reject) => {
+            //get pages where are for this project and are older than the age specified for update(lifetime)
+            let lifeTime = Date.now() - this.configuration.config.lifeTime *24*60*60*1000;
+            var range = IDBKeyRange.bound([this.pid, 0],[this.pid, lifeTime]);
+
+            readablePagesObjectStore()
+                .index("pageDated")
+                    .openCursor(range)
+                        .onsuccess = this.launchCandidateJobs(resolve);
+        });
+    }
+
+    //*************************************************************************
+
+    launchCandidateJobs(resolve) {
+        return (event) => {
+            let cursor = event.target.result;
+            if(cursor) {
+                let node = cursor.value;
+                //first search in jobs if already fetching the url we will ignore this one
+                if(this.jobs.some((item)=>{return item.pageID == node.id;})) {
+                    cursor.continue();
+                    return;
+                }
+                animateIcon();
+                this.addJob(node.id, node.path);
+
+                //ok let do some speedy. if we have some space in jobs, use current db connection and fill them...
+                if(this.jobs.length < this.configuration.config.downloadLimit) {
+                    cursor.continue();
+                    return;
+                }
+            }
+            resolve();
+        }
+    }
+
+    //*************************************************************************
+
     saveLink(currentURL, baseURL, pageID) {
         try {
             let url = new URL(currentURL, baseURL);
             url.hash = "";  //remove hash part of url
             let txtUrl = url.href
-            if(this.info.config.whiteList.indexOf(url.host) >= 0) {
+            if(this.configuration.config.whiteList.indexOf(url.host) >= 0) {
                 let newUrl = {
-                    pid: this.info.pid,
+                    pid: this.pid,
                     time: 0,
                     path: txtUrl,
                     referrer: pageID
@@ -169,8 +232,10 @@ class Project {
         } catch (e) {}
     }
 
+    //*************************************************************************
+
     savePage(pageID, content, contentType) {
-        var request = db.transaction(["Pages"], "readonly").objectStore("Pages").get(pageID);
+        var request = readablePagesObjectStore().get(pageID);
         request.onsuccess = event=>{
             let data      = event.target.result;
             data.time     = Date.now();
@@ -178,11 +243,12 @@ class Project {
             data.content  = content;
             data.filePath = getFileName(data.path, contentType);
 
-            let request = db.transaction(["Pages"], "readwrite").objectStore("Pages").put(data);
+            savePageToDB(data);
         };
     }
 }
 
+//*************************************************************************
 
 function getRedirectPage(url) {
     return new Blob([`
@@ -199,6 +265,14 @@ function getRedirectPage(url) {
 </script>
 </html>`]);
 }
+
+//*************************************************************************
+
+function contentTypeIsHTML(contentType) {
+    return contentType.substr(0, 9) == "text/html";
+}
+
+//*************************************************************************
 /****** Regular Expression functions ******/
 
 let regexps = [
@@ -219,7 +293,7 @@ function getLinks(content) {
     return result;
 }
 
-function replaceLinks(content, replacer) {
+function replaceLinks(content, replacer=()=>{}) {
     regexps.forEach((regexp) => {
         content = content.replace(regexp, replacer);
     });

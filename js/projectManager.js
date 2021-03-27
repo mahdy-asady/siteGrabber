@@ -1,160 +1,148 @@
 "use strict";
 
-//after connecting to database. every 3 seconds we will refresh projects
-initiateDatabase().then(initProjects);
 
 //the key of Projects array is pid of the projects, then we could easyly access every project in this list by accessing Projects[pid]
 var Projects = {}
-
-//*************************************************************************
-
-browser.runtime.onConnect.addListener(initConnection);
-var CSConnections = {};
-
-function initConnection(newConnection) {
-    let name = newConnection.name
-    CSConnections[name] = newConnection;
-
-    CSConnections[name].onDisconnect.addListener((p) => {delete CSConnections[p.name]});
-
-    CSConnections[name].onMessage.addListener(msg => {
-        switch (msg.type) {
-            case "getProjectsList":
-                listProjects();
-                break;
-            case "addProject":
-                newProject(msg.data);
-                break;
-            case "editProject":
-                editProject(msg.data);
-                break;
-            case "deleteProject":
-                deleteProject(msg.pid);
-                break;
-            case "toggleActivate":
-                toggleActivate(msg.pid);
-                break;
-            case "getProjectInfo":
-                getProjectInfo(msg.pid);
-                break
-            case "getProjectStatus":
-                sendProjectStatus(msg.pid);
-                break;
-            case "getProjectActiveJobs":
-                getProjectActiveJobs(msg.pid);
-                break;
-            case "exportProject":
-                exportProject(msg.pid);
-                break;
-            default:
-
-        }
-    });
+var interConnections = {}
+var listeners = {
+    "getProjectsList"       : listProjects,
+    "addProject"            : newProject,
+    "editProject"           : editProject,
+    "deleteProject"         : deleteProject,
+    "toggleActivate"        : toggleActivate,
+    "getProjectConfig"      : getProjectConfig,
+    "getProjectStatus"      : sendProjectStatus,
+    "getProjectActiveJobs"  : getProjectActiveJobs,
+    "exportProject"         : exportProject
 }
 
-async function sendMessage(name, msg) {
-    if(CSConnections[name])
-        CSConnections[name].postMessage(msg);
+initiateDatabase().then(initiateSystem, systemFailed);
+
+//*************************************************************
+
+function initiateSystem() {
+    initiateProjects();
+    browser.runtime.onConnect.addListener(onConnectionRequest);
 }
 
-//*************************************************************************
+//*************************************************************
 
-function initProjects() {
-    let dbProjects = db.transaction("Projects").objectStore("Projects");
-    dbProjects.getAll().onsuccess = function(event) {
+function systemFailed() {
+
+}
+
+//*************************************************************
+
+function initiateProjects() {
+    readableProjectsObjectStore().getAll().onsuccess = function(event) {
         event.target.result.forEach(item => {
-            //create project
-            Projects[item.pid] = new Project(item);
+            instantiateProject(item);
         });
     }
 }
 
+//*************************************************************************
+
+function instantiateProject(config){ // TODO: Change name
+    if(!Projects[config.pid])
+        Projects[config.pid] = new Project(config);
+}
+
+//*************************************************************************
+
+function onConnectionRequest(newConnection) {
+    let name = newConnection.name
+    interConnections[name] = newConnection;
+    interConnections[name].onDisconnect.addListener((p) => {delete interConnections[p.name]});
+    interConnections[name].onMessage.addListener(onMessageIncome);
+}
+
+//*************************************************************
+
+function onMessageIncome(msg) {
+    if(listeners[msg.type])
+        listeners[msg.type](msg.data);
+    else {
+        console.log("No receiver configed for", msg.type);
+    }
+}
+
+//*************************************************************************
+
+function sendMessage(receiver, messageType, data) {
+    if(interConnections[receiver]) {
+        let msg = {
+            type : messageType,
+            data : data
+        }
+        interConnections[receiver].postMessage(msg);
+    }
+}
+
+//*************************************************************************
 
 function newProject(data) {
     let firstLink = data.firstLink;
     delete data.firstLink;
 
-    var transaction = db.transaction("Projects", "readwrite");
-    var objectStore = transaction.objectStore("Projects");
-    var request = objectStore.add(data);
-    request.onsuccess = function(event) {
+    saveProjectToDB(data, (event) => {
         let pid = event.target.result;
         data.pid = pid;
         //event.target.result
-        let Page ={
+        let Page = {
             pid: pid,
             time: 0,
             path: firstLink
         };
-
-        var pgTransaction = db.transaction("Pages", "readwrite");
-        var Pages = pgTransaction.objectStore("Pages");
-        var PagesRequest = Pages.add(Page);
-        PagesRequest.onsuccess = function(event) {
-            Projects[pid] = new Project(data);
-            sendMessage("siteGrabberNew", {
-                type:"ok"
-            });
-        };
-    };
+        savePageToDB(Page, (event) => {
+            instantiateProject(data);
+            sendMessage("siteGrabberNew", "ok");
+        });
+    });
 
 }
+
+//*************************************************************************
 
 function editProject(data) {
-    data.isActive = Projects[data.pid].info.isActive;
-    Projects[data.pid].setInfo(data);
-    //put data
-    let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
-    dbProjects.put(Projects[data.pid].info);
+    data.isActive = Projects[data.pid].isActive;
+    Projects[data.pid].setConfig(data);
+    saveProjectToDB(data);
 }
+
+//*************************************************************************
 
 function deleteProject(pid) {
     //stop project
     Projects[pid].destructor();
-    //Projects[pid] = null;
     delete Projects[pid];
-    //remove from db
-    db.transaction("Projects", "readwrite").objectStore("Projects").delete(pid).onsuccess = (event) => {
-        let index = db.transaction("Pages", "readwrite").objectStore("Pages").index("pid");
-        let request = index.openCursor(IDBKeyRange.only(pid));
-        request.onsuccess = function(event) {
-            let cursor = event.target.result;
-            if (cursor) {
-                cursor.delete();
-                cursor.continue();
-            }
-        }
-    }
+
+    deleteProjectFromDB(pid);
 }
-//we certainly need a cleanup function to run every startup to remove remaining rows in Pages store.
-//function cleanup(){}
+
+//*************************************************************************
 
 function toggleActivate(pid) {
-    Projects[pid].setActive(!Projects[pid].info.isActive);
-
-    let dbProjects = db.transaction("Projects", "readwrite").objectStore("Projects");
-    dbProjects.put(Projects[pid].info);
+    Projects[pid].toggleActive();
+    saveProjectToDB(Projects[pid].getConfig());
 }
 
+//*************************************************************************
 
-function getProjectInfo(pid) {
-    var request = db.transaction("Projects").objectStore("Projects").get(pid);
-    request.onsuccess = function(event) {
-        sendMessage("siteGrabberMain", {
-            type : "ProjectInfo",
-            data : request.result
-        });
-    }
+function getProjectConfig(pid) {
+    sendMessage("siteGrabberMain", "ProjectInfo", Projects[pid].getConfig());
 }
+
+//*************************************************************************
 
 function sendProjectStatus(pid) {
-    let index = db.transaction("Pages").objectStore("Pages").index("pid");
+    let index = readablePagesObjectStore().index("pid");
     let allPages = index.count(pid);
     allPages.onsuccess = ()=>{
         var savedPages = 0, savedBytes = 0;
 
         var range = IDBKeyRange.bound([pid, 1],[pid, Date.now()]);
-        let Pages = db.transaction("Pages").objectStore("Pages").index("pageDated");
+        let Pages = readablePagesObjectStore().index("pageDated");
         var rq = Pages.openCursor(range);
 
         rq.onsuccess = ()=>{
@@ -170,8 +158,7 @@ function sendProjectStatus(pid) {
                     savedPages  : savedPages,
                     savedBytes  : formatBytes(savedBytes)
                 }
-                sendMessage("siteGrabberMain", {
-                    type  : "projectStatus",
+                sendMessage("siteGrabberMain", "projectStatus", {
                     pid   : pid,
                     data  : data
                 });
@@ -180,35 +167,37 @@ function sendProjectStatus(pid) {
     }
 }
 
+//*************************************************************************
+
 function getProjectActiveJobs(pid) {
     if(Projects[pid]) Projects[pid].sendActiveJobs();
 }
 
+//*************************************************************************
+
 function listProjects() {
     let rpt = [];
-    Object.keys(Projects).forEach(item => {
+    for(const item in Projects) {
         rpt.push({
-            pid: Projects[item].info.pid,
-            isActive: Projects[item].info.isActive,
-            name: Projects[item].info.name
+            pid: Projects[item].pid,
+            isActive: Projects[item].isActive,
+            name: Projects[item].name
         });
-    });
+    };
 
-    sendMessage("siteGrabberMain", {
-        type:"projectsList",
-        projects: rpt
-    });
+    sendMessage("siteGrabberMain", "projectsList", rpt);
 }
 
+//*************************************************************************
 
 function exportProject(pid){
-    var request = db.transaction("Projects").objectStore("Projects").get(pid);
+    var request = readableProjectsObjectStore().get(pid);
 
     request.onsuccess = function(event) {
         // Do something with the request.result!
         let pName = request.result.name;
 
-        let index = db.transaction("Pages").objectStore("Pages").index("pid");
+        let index = readablePagesObjectStore().index("pid");
         //create jsZip
         let zip = new JSZip();
         //create a root folder based on project name and store all files in it
@@ -224,8 +213,7 @@ function exportProject(pid){
             let pageCount = Object.keys(allPages).length;
             var i=0;
             for(var p in allPages) {
-                sendMessage("siteGrabberMain", {
-                    type:           "exportStatus",
+                sendMessage("siteGrabberMain", "exportStatus", {
                     message:        "Manipulating web pages...",
                     status:         (++i/pageCount)*100/2,
                     currentFile:    p
@@ -273,15 +261,13 @@ function exportProject(pid){
                 compressionOptions:     {level: 1}, //1:best speed 9:best compression
                 comment:                "Generated by siteGrabber"
             }, data=>{
-                sendMessage("siteGrabberMain", {
-                    type:           "exportStatus",
+                sendMessage("siteGrabberMain", "exportStatus", {
                     message:        "Adding files to archive...",
                     status:         50+data.percent/2,
                     currentFile:    data.currentFile
                 });
             }).then(function(content) {
-                sendMessage("siteGrabberMain", {
-                    type:"exportFile",
+                sendMessage("siteGrabberMain", "exportFile", {
                     name: pName + ".zip",
                     content: content
                 });

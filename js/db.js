@@ -76,3 +76,70 @@ function databaseUpgradeHandler(event) {
     pagesStore.createIndex("pathOfProject", ["pid", "path"], { unique: true });
 
 };
+
+//*************************************************************
+
+function readableProjectsObjectStore() {
+    return db.transaction("Projects", "readonly").objectStore("Projects");
+}
+
+//*************************************************************
+
+function writableProjectsObjectStore() {
+    return db.transaction("Projects", "readwrite").objectStore("Projects");
+}
+
+//*************************************************************
+
+function readablePagesObjectStore() {
+    return db.transaction("Pages", "readonly").objectStore("Pages");
+}
+
+//*************************************************************
+
+function writablePagesObjectStore() {
+    return db.transaction("Pages", "readwrite").objectStore("Pages");
+}
+
+//*************************************************************
+
+function saveProjectToDB(data, onSuccessCallback = ()=>{}) {
+    var request;
+
+    if(data.pid) {
+        request = writableProjectsObjectStore().put(data);
+    } else {
+        request = writableProjectsObjectStore().add(data);
+    }
+    request.onsuccess = onSuccessCallback;
+}
+
+//*************************************************************
+
+function deleteProjectFromDB(pid) {
+    writableProjectsObjectStore().delete(pid).onsuccess = (event) => {
+        let index = writablePagesObjectStore().index("pid");
+        let request = index.openCursor(IDBKeyRange.only(pid));
+        request.onsuccess = function(event) {
+            let cursor = event.target.result;
+            if (cursor) {
+                cursor.delete();
+                cursor.continue();
+            }
+        }
+    }
+}
+//we certainly need a cleanup function to run every startup to remove remaining rows in Pages store.
+//function cleanup(){}
+
+//*************************************************************
+
+function savePageToDB(data, onSuccessCallback = ()=>{}) {
+    var request;
+    if(data.id) {
+        request = writablePagesObjectStore().put(data);
+    } else {
+        request = writablePagesObjectStore().add(data);
+    }
+    request.onsuccess = onSuccessCallback;
+}

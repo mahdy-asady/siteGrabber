@@ -4,41 +4,50 @@ var activeProject = 0; //current active dispay project
 
 
 var BGConnection = browser.runtime.connect({name:"siteGrabberMain"});
-BGConnection.onMessage.addListener(updateWindow);
+BGConnection.onMessage.addListener(onMessageIncome);
 
 function doGetList() {
-    BGConnection.postMessage({type:"getProjectsList"});
-    if(activeProject) BGConnection.postMessage({type:"getProjectStatus", pid:activeProject});
+    //BGConnection.postMessage({type:"getProjectsList"});
+    sendMessage("getProjectsList");
+    if(activeProject) sendMessage("getProjectStatus", activeProject);//BGConnection.postMessage({type:"getProjectStatus", pid:activeProject});
 }doGetList();
 
 setInterval(()=>{doGetList()}, 500);
 setInterval(()=>{
     if(activeProject)
-        BGConnection.postMessage({type:"getProjectActiveJobs", pid:activeProject});
+        sendMessage("getProjectActiveJobs", activeProject); //BGConnection.postMessage({type:"getProjectActiveJobs", pid:activeProject});
 },200);
 
-function updateWindow(msg) {
+function onMessageIncome(msg) {
     switch (msg.type) {
         case "projectActiveJobs":
-            updateActiveJobs(msg);
+            updateActiveJobs(msg.data);
             break;
         case "projectStatus":
-            updateProjectStatus(msg);
+            updateProjectStatus(msg.data);
             break;
         case "projectsList":
-            updateProjects(msg);
+            updateProjects(msg.data);
             break;
         case "ProjectInfo":
             showEditWindow(msg.data);
             break;
         case "exportStatus":
-            updateExportStatus(msg);
+            updateExportStatus(msg.data);
             break;
         case "exportFile":
-            saveFile(msg);
+            saveFile(msg.data);
             break;
     }
 
+}
+
+function sendMessage(messageType, data = null) {
+    let msg = {
+        type: messageType,
+        data: data
+    }
+    BGConnection.postMessage(msg);
 }
 
 function updateActiveJobs(msg) {
@@ -68,11 +77,11 @@ function updateProjectStatus(msg) {
     }
 }
 
-function updateProjects(msg) {
+function updateProjects(data) {
     //the order of projects should not change between every request, so we need to check rows one by one. anything that does not match should be removed! and at end we should add remaining items!
     // in this situation even if first item of a list of 100 project get deleted we just delete all list once and it will not need to do this every execution of list update
     let listIndex = 0;
-    let data = msg.projects;
+    //let data = msg.projects;
     //we see data as a stack. if first item is in projects list then shift it from stack
     while(listIndex < $("#projects li").length) {
         if(data.length == 0 || $(`#projects li:nth-child(${listIndex+1})`).data("pid") != data[0].pid) {
@@ -144,10 +153,7 @@ $("#projects").on("click", "li", function(){
 });
 
 $("#projectEdit").click(function() {
-    BGConnection.postMessage({
-        type : "getProjectInfo",
-        pid  :  activeProject
-    });
+    sendMessage("getProjectConfig", activeProject);
 });
 
 function showEditWindow(info) {
@@ -183,26 +189,29 @@ $("#btnEditSave").click(function() {
         data.config.whiteList.push(this.value);
     });
 
-    BGConnection.postMessage({
+    sendMessage("editProject", data);
+    /*BGConnection.postMessage({
         type: "editProject",
         data: data
-    });
+    });*/
     $("#wEdit").css("display", "none");
 });
 
 $("#projectPause").click(function() {
-    BGConnection.postMessage({
+    sendMessage("toggleActivate", activeProject);
+    /*BGConnection.postMessage({
         type:"toggleActivate",
         pid: activeProject
-    });
+    });*/
 });
 
 $("#projectDelete").click(function() {
     if((activeProject != 0) && confirm("this action could not be undone?\nAre you sure?")) {//show to user how much data was downloaded and get confirm that user has exported them
-        BGConnection.postMessage({
+        sendMessage("deleteProject", activeProject);
+        /*BGConnection.postMessage({
             type:"deleteProject",
             pid: activeProject
-        });
+        });*/
         activeProject = 0;
         $("#activePages").find("tr:gt(0)").remove();
     }
@@ -221,10 +230,11 @@ $("#projectExport").click(function(){
     $("#exportProgressBar").css("width", 0);
 
 //    $("#wExport").css("display", "block");
-    BGConnection.postMessage({
+    sendMessage("exportProject", activeProject);
+    /*BGConnection.postMessage({
         type:"exportProject",
         pid: activeProject
-    });
+    });*/
 });
 
 $("#wExportCancel").click(function() {
