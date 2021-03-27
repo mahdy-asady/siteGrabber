@@ -7,7 +7,7 @@ class Project {
             {
                 pageID: number,
                 path:string
-                status: 0-100 <0: not started, 40: content downloaded, 50: content saved, 50-100: saving links>
+                progress: 0-100 <0: not started, 40: content downloaded, 50: content saved, 50-100: saving links>
             }
         ]
     */
@@ -86,12 +86,11 @@ class Project {
         3. if it is a html file, extract links
         4. save links
     */
-    worker(item) {
+    worker(job) {
         return new Promise((resolve, reject) => {
-            //change status;
-            item.status = 10;
-            fetch(item.path).then(response => {
-                item.status = 40;
+            job.progress = 10;
+            fetch(job.path).then(response => {
+                job.progress = 40;
                 if(response.ok) {
                     response.blob().then(content => {
                         let contentType = response.headers.get('Content-Type');
@@ -102,28 +101,27 @@ class Project {
                             content = getRedirectPage(response.url);
                             contentType = "text/html; charset=utf-8";
                         }
-                        this.savePage(item.pageID, content, contentType);
+                        this.savePage(job.pageID, content, contentType);
 
                         // if it is text/html then extract links
                         if(contentTypeIsHTML(contentType)) {
-                            //change status
-                            item.status = 50;
+                            job.progress = 50;
                             //now extract all available links
                             content.text().then(txt=>{
                                 const matches = getLinks(txt);
-                                var counter = 50/matches.length;
+                                var step = 50/matches.length;
                                 let progress = 50;
                                 matches.forEach((match) => {
-                                    progress += counter;
-                                    item.status = Math.round(progress);
-                                    this.saveLink(match, item.path, item.pageID);
+                                    progress += step;
+                                    job.progress = Math.round(progress);
+                                    this.saveLink(match, job.path, job.pageID);
                                 });
                             });
                         }
                         resolve();
                     });
                 } else {
-                    this.savePage(item.pageID, new Blob([""]), "");
+                    this.savePage(job.pageID, new Blob([""]), "");
                     reject();
                 }
             });
@@ -133,26 +131,33 @@ class Project {
     //*************************************************************************
 
     addJob(pageID, path){
-        let threadIndex = this.jobs.push({
+        this.jobs.push({
             pageID : pageID,
             path: path,
-            status : 0
-        }) - 1;
+            progress : 0
+        });
 
-        this.worker(this.jobs[threadIndex]).finally(()=>{this.deleteJob(pageID)});
+        this.worker(this.jobs[this.findJobIndexByPageID(pageID)])
+            .finally(()=>{this.deleteJob(pageID)});
     }
 
     //*************************************************************************
 
     async deleteJob(pageID){
-        await new Promise(r => setTimeout(r, 200));
-        let i = 0;
-        for(i = 0; i<this.jobs.length; i++) {
+        await new Promise(r => setTimeout(r, 200)); // some time for user to see progress
+
+        this.jobs.splice(this.findJobIndexByPageID(pageID), 1);
+    }
+
+    //*************************************************************************
+
+    findJobIndexByPageID(pageID) {
+        for(let i = 0; i < this.jobs.length; i++) {
             if(this.jobs[i].pageID == pageID) {
-                this.jobs.splice(i, 1);//delete finished job
-                break;
+                return i;
             }
         }
+        return -1;
     }
 
     //*************************************************************************
@@ -196,7 +201,7 @@ class Project {
             if(cursor) {
                 let node = cursor.value;
                 //first search in jobs if already fetching the url we will ignore this one
-                if(this.jobs.some((item)=>{return item.pageID == node.id;})) {
+                if(this.jobs.some((job)=>{return job.pageID == node.id;})) {
                     cursor.continue();
                     return;
                 }
